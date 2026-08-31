@@ -132,7 +132,7 @@ namespace NOMINA_2025
                 LoadSubDirectories(node);
             }
         }
-
+        //Comentario
         private void treeViewDirectorios_AfterCollapse(object sender, TreeViewEventArgs e)
         {
             // Si es el nodo seleccionado actualmente, que se mantenga "abierto"
