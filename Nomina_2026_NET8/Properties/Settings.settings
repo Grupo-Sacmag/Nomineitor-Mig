@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Nomina_2026_NET8.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="RutaSeleccionada" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="RutaSalidaJSON" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="MostrarFiltroArchivos" Type="System.String" Scope="User">
+      <Value Profile="(Default)">*.NOM</Value>
+    </Setting>
+    <Setting Name="AesKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ryOnOCufik8ErhIKsR13Gr3nx01QsRHa3QzFWyFsLm0=</Value>
+    </Setting>
+    <Setting Name="RutaTablasTarifa" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\ProgramData\NominaEmpresarial2026\Tarifas\TablasTarifa.dat</Value>
+    </Setting>
+    <Setting Name="ConnectionString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=SQL6012.site4now.net;Initial Catalog=db_a4091b_sacmag;User ID=db_a4091b_sacmag_admin;Password=Sacmag2020;Connect Timeout=10;</Value>
+    </Setting>
+    <Setting Name="EditPassword" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Rev$1597</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

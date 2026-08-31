@@ -1,0 +1,110 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\c#\\backups\\nomina c# .net8\\nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\c#\\backups\\nomina c# .net8\\nomina_2026_net8\\formedicioncentralpersonal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formedicioncentralpersonal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\nomina_2026_net8\\formedicioncentralpersonal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formedicioncentralpersonal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\c#\\backups\\nomina c# .net8\\nomina_2026_net8\\formprincipal.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formprincipal.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "FormPrincipal.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormPrincipal.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormPrincipal.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormPrincipal.cs [Design]",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormPrincipal.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-20T23:49:21.404Z",
+              "IsPinned": true,
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FormPrincipal.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormPrincipal.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormPrincipal.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormPrincipal.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormPrincipal.cs",
+              "ViewState": "AgIAAHAAAAAAAAAAAAAkwJEAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-20T23:49:27.247Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FormPrincipal.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormPrincipal.Designer.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormPrincipal.Designer.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormPrincipal.Designer.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormPrincipal.Designer.cs",
+              "ViewState": "AgIAADYCAAAAAAAAAAAiwDoCAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-21T00:01:48.416Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "FormEDICIONCENTRALPERSONAL.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs [Design]",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T18:41:38.312Z",
+              "IsPinned": true,
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FormEDICIONCENTRALPERSONAL.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Backups\\Nomina C# .NET8\\Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormEDICIONCENTRALPERSONAL.cs",
+              "ViewState": "AgIAANADAAAAAAAAAAAYwNcDAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T18:41:55.6Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
