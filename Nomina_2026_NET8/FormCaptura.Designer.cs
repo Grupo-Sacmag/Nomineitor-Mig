@@ -29,22 +29,22 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormCaptura));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle15 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle16 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle10 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle11 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle12 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle13 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle14 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle49 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle63 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle64 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle50 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle51 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle52 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle53 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle54 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle55 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle56 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle57 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle58 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle59 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle60 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle61 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle62 = new DataGridViewCellStyle();
             tsOpciones = new ToolStrip();
             tsmArchivo = new ToolStripDropDownButton();
             tsArchivarNomina = new ToolStripMenuItem();
@@ -201,14 +201,15 @@
             // 
             tsArchivarNomina.Name = "tsArchivarNomina";
             tsArchivarNomina.ShortcutKeys = Keys.Control | Keys.G;
-            tsArchivarNomina.Size = new Size(206, 22);
+            tsArchivarNomina.Size = new Size(220, 22);
             tsArchivarNomina.Text = "Archivar Nómina";
             tsArchivarNomina.Click += tsArchivarNomina_Click;
             // 
             // tsmEditarPersonal
             // 
             tsmEditarPersonal.Name = "tsmEditarPersonal";
-            tsmEditarPersonal.Size = new Size(206, 22);
+            tsmEditarPersonal.ShortcutKeys = Keys.F1;
+            tsmEditarPersonal.Size = new Size(220, 22);
             tsmEditarPersonal.Text = "Editar Datos de Personal";
             tsmEditarPersonal.Click += tsmEditarPersonal_Click;
             // 
@@ -259,6 +260,7 @@
             // tsmCFDIEdicion
             // 
             tsmCFDIEdicion.Name = "tsmCFDIEdicion";
+            tsmCFDIEdicion.ShortcutKeys = Keys.F6;
             tsmCFDIEdicion.Size = new Size(200, 22);
             tsmCFDIEdicion.Text = "CFDI";
             tsmCFDIEdicion.Click += tsmCFDIEdicion_Click;
@@ -277,20 +279,22 @@
             // 
             tsOrdenarAlfabeticamente.DropDownItems.AddRange(new ToolStripItem[] { tsOrdenAscendente, tsOrdenDescendente });
             tsOrdenarAlfabeticamente.Name = "tsOrdenarAlfabeticamente";
-            tsOrdenarAlfabeticamente.Size = new Size(176, 22);
+            tsOrdenarAlfabeticamente.Size = new Size(240, 22);
             tsOrdenarAlfabeticamente.Text = "Alfabeticamente";
             // 
             // tsOrdenAscendente
             // 
             tsOrdenAscendente.Name = "tsOrdenAscendente";
-            tsOrdenAscendente.Size = new Size(179, 22);
+            tsOrdenAscendente.ShortcutKeys = Keys.Control | Keys.A;
+            tsOrdenAscendente.Size = new Size(215, 22);
             tsOrdenAscendente.Text = "Ascendente (A - Z)";
             tsOrdenAscendente.Click += tsmAlfabetoAscendente_Click;
             // 
             // tsOrdenDescendente
             // 
             tsOrdenDescendente.Name = "tsOrdenDescendente";
-            tsOrdenDescendente.Size = new Size(179, 22);
+            tsOrdenDescendente.ShortcutKeys = Keys.Control | Keys.Shift | Keys.A;
+            tsOrdenDescendente.Size = new Size(291, 22);
             tsOrdenDescendente.Text = "Descendente (Z - A)";
             tsOrdenDescendente.Click += tsmAlfabetoDescendente_Click;
             // 
@@ -298,27 +302,30 @@
             // 
             tsOrdenarNumericamente.DropDownItems.AddRange(new ToolStripItem[] { tsOrdenAscendenteNum, tsOrdenDescendenteNum });
             tsOrdenarNumericamente.Name = "tsOrdenarNumericamente";
-            tsOrdenarNumericamente.Size = new Size(176, 22);
+            tsOrdenarNumericamente.Size = new Size(240, 22);
             tsOrdenarNumericamente.Text = "Numericamente";
             // 
             // tsOrdenAscendenteNum
             // 
             tsOrdenAscendenteNum.Name = "tsOrdenAscendenteNum";
-            tsOrdenAscendenteNum.Size = new Size(196, 22);
+            tsOrdenAscendenteNum.ShortcutKeys = Keys.Control | Keys.N;
+            tsOrdenAscendenteNum.Size = new Size(233, 22);
             tsOrdenAscendenteNum.Text = "Ascendente (1 - MÁX)";
             tsOrdenAscendenteNum.Click += tsmNumericoAscendente_Click;
             // 
             // tsOrdenDescendenteNum
             // 
             tsOrdenDescendenteNum.Name = "tsOrdenDescendenteNum";
-            tsOrdenDescendenteNum.Size = new Size(196, 22);
+            tsOrdenDescendenteNum.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
+            tsOrdenDescendenteNum.Size = new Size(309, 22);
             tsOrdenDescendenteNum.Text = "Descendente (MÁX - 1)";
             tsOrdenDescendenteNum.Click += tsmNumericoDescendente_Click;
             // 
             // tsReestablecer
             // 
             tsReestablecer.Name = "tsReestablecer";
-            tsReestablecer.Size = new Size(176, 22);
+            tsReestablecer.ShortcutKeys = Keys.Control | Keys.Alt | Keys.R;
+            tsReestablecer.Size = new Size(240, 22);
             tsReestablecer.Text = "Reestablecer Orden";
             tsReestablecer.Click += tsReestablecerTabla_Click;
             // 
@@ -511,7 +518,7 @@
             // 
             tsSeleccionarTodo.DropDownItems.AddRange(new ToolStripItem[] { tsCopiarSinEncabezados, tsCopiarConEncabezados });
             tsSeleccionarTodo.Name = "tsSeleccionarTodo";
-            tsSeleccionarTodo.ShortcutKeys = Keys.Control | Keys.A;
+            tsSeleccionarTodo.ShortcutKeys = Keys.Control | Keys.S;
             tsSeleccionarTodo.Size = new Size(212, 22);
             tsSeleccionarTodo.Text = "Seleccionar Todo";
             tsSeleccionarTodo.Click += tsSeleccionarTodo_Click;
@@ -966,36 +973,36 @@
             dgvMostrarPersonal.AllowUserToResizeColumns = false;
             dgvMostrarPersonal.AllowUserToResizeRows = false;
             dgvMostrarPersonal.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dgvMostrarPersonal.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle49.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle49.BackColor = SystemColors.Control;
+            dataGridViewCellStyle49.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle49.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle49.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle49.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle49.WrapMode = DataGridViewTriState.True;
+            dgvMostrarPersonal.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle49;
             dgvMostrarPersonal.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvMostrarPersonal.Columns.AddRange(new DataGridViewColumn[] { NumeroEmpleado, NombreEmpleado, FechaAl, DiasTrabajados, Salario, hsNorm, hsDobles, hsTriples, OF, PVacac, Otras, PercExenta, TotIngr, Ispt, SubEmp, IMSS, Prestamos, FONACOT, PensionAliment, INFONAVIT, TotDeduc, NETO, BANAMEX });
-            dataGridViewCellStyle15.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle15.BackColor = SystemColors.Window;
-            dataGridViewCellStyle15.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle15.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle15.SelectionBackColor = Color.LimeGreen;
-            dataGridViewCellStyle15.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle15.WrapMode = DataGridViewTriState.False;
-            dgvMostrarPersonal.DefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle63.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle63.BackColor = SystemColors.Window;
+            dataGridViewCellStyle63.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle63.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle63.SelectionBackColor = Color.LimeGreen;
+            dataGridViewCellStyle63.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle63.WrapMode = DataGridViewTriState.False;
+            dgvMostrarPersonal.DefaultCellStyle = dataGridViewCellStyle63;
             dgvMostrarPersonal.Dock = DockStyle.Fill;
             dgvMostrarPersonal.Location = new Point(0, 0);
             dgvMostrarPersonal.Margin = new Padding(4, 3, 4, 3);
             dgvMostrarPersonal.Name = "dgvMostrarPersonal";
-            dataGridViewCellStyle16.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle16.BackColor = SystemColors.Control;
-            dataGridViewCellStyle16.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle16.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle16.SelectionBackColor = Color.LimeGreen;
-            dataGridViewCellStyle16.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle16.WrapMode = DataGridViewTriState.True;
-            dgvMostrarPersonal.RowHeadersDefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle64.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle64.BackColor = SystemColors.Control;
+            dataGridViewCellStyle64.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle64.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle64.SelectionBackColor = Color.LimeGreen;
+            dataGridViewCellStyle64.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle64.WrapMode = DataGridViewTriState.True;
+            dgvMostrarPersonal.RowHeadersDefaultCellStyle = dataGridViewCellStyle64;
             dgvMostrarPersonal.RowHeadersVisible = false;
             dgvMostrarPersonal.SelectionMode = DataGridViewSelectionMode.CellSelect;
             dgvMostrarPersonal.Size = new Size(2221, 997);
@@ -1010,8 +1017,8 @@
             // 
             // NumeroEmpleado
             // 
-            dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 6.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            NumeroEmpleado.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle50.Font = new Font("Microsoft Sans Serif", 6.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            NumeroEmpleado.DefaultCellStyle = dataGridViewCellStyle50;
             NumeroEmpleado.Frozen = true;
             NumeroEmpleado.HeaderText = "No.";
             NumeroEmpleado.Name = "NumeroEmpleado";
@@ -1075,9 +1082,9 @@
             // 
             // OF
             // 
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle3.Format = "N2";
-            OF.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle51.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle51.Format = "N2";
+            OF.DefaultCellStyle = dataGridViewCellStyle51;
             OF.HeaderText = "O. F.";
             OF.Name = "OF";
             OF.Resizable = DataGridViewTriState.False;
@@ -1085,9 +1092,9 @@
             // 
             // PVacac
             // 
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle4.Format = "N2";
-            PVacac.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle52.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle52.Format = "N2";
+            PVacac.DefaultCellStyle = dataGridViewCellStyle52;
             PVacac.HeaderText = "Prima Vacacional";
             PVacac.Name = "PVacac";
             PVacac.Resizable = DataGridViewTriState.False;
@@ -1095,9 +1102,9 @@
             // 
             // Otras
             // 
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle5.Format = "N2";
-            Otras.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle53.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle53.Format = "N2";
+            Otras.DefaultCellStyle = dataGridViewCellStyle53;
             Otras.HeaderText = "Otras";
             Otras.Name = "Otras";
             Otras.Resizable = DataGridViewTriState.False;
@@ -1105,9 +1112,9 @@
             // 
             // PercExenta
             // 
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle6.Format = "N2";
-            PercExenta.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle54.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle54.Format = "N2";
+            PercExenta.DefaultCellStyle = dataGridViewCellStyle54;
             PercExenta.HeaderText = "Percepción Exenta";
             PercExenta.Name = "PercExenta";
             PercExenta.Resizable = DataGridViewTriState.False;
@@ -1123,9 +1130,9 @@
             // 
             // Ispt
             // 
-            dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle7.Format = "N2";
-            Ispt.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle55.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle55.Format = "N2";
+            Ispt.DefaultCellStyle = dataGridViewCellStyle55;
             Ispt.HeaderText = "ISPT";
             Ispt.Name = "Ispt";
             Ispt.ReadOnly = true;
@@ -1134,9 +1141,9 @@
             // 
             // SubEmp
             // 
-            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle8.Format = "N2";
-            SubEmp.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle56.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle56.Format = "N2";
+            SubEmp.DefaultCellStyle = dataGridViewCellStyle56;
             SubEmp.HeaderText = "Subsidio";
             SubEmp.Name = "SubEmp";
             SubEmp.ReadOnly = true;
@@ -1145,9 +1152,9 @@
             // 
             // IMSS
             // 
-            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle9.Format = "N2";
-            IMSS.DefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle57.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle57.Format = "N2";
+            IMSS.DefaultCellStyle = dataGridViewCellStyle57;
             IMSS.HeaderText = "IMSS";
             IMSS.Name = "IMSS";
             IMSS.ReadOnly = true;
@@ -1156,9 +1163,9 @@
             // 
             // Prestamos
             // 
-            dataGridViewCellStyle10.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle10.Format = "N2";
-            Prestamos.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle58.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle58.Format = "N2";
+            Prestamos.DefaultCellStyle = dataGridViewCellStyle58;
             Prestamos.HeaderText = "Préstamos";
             Prestamos.Name = "Prestamos";
             Prestamos.Resizable = DataGridViewTriState.False;
@@ -1166,9 +1173,9 @@
             // 
             // FONACOT
             // 
-            dataGridViewCellStyle11.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle11.Format = "N2";
-            FONACOT.DefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle59.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle59.Format = "N2";
+            FONACOT.DefaultCellStyle = dataGridViewCellStyle59;
             FONACOT.HeaderText = "FONACOT";
             FONACOT.Name = "FONACOT";
             FONACOT.Resizable = DataGridViewTriState.False;
@@ -1176,9 +1183,9 @@
             // 
             // PensionAliment
             // 
-            dataGridViewCellStyle12.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle12.Format = "N2";
-            PensionAliment.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle60.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle60.Format = "N2";
+            PensionAliment.DefaultCellStyle = dataGridViewCellStyle60;
             PensionAliment.HeaderText = "Pension Alimenticia";
             PensionAliment.Name = "PensionAliment";
             PensionAliment.Resizable = DataGridViewTriState.False;
@@ -1186,9 +1193,9 @@
             // 
             // INFONAVIT
             // 
-            dataGridViewCellStyle13.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle13.Format = "N2";
-            INFONAVIT.DefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle61.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle61.Format = "N2";
+            INFONAVIT.DefaultCellStyle = dataGridViewCellStyle61;
             INFONAVIT.HeaderText = "INFONAVIT";
             INFONAVIT.Name = "INFONAVIT";
             INFONAVIT.Resizable = DataGridViewTriState.False;
@@ -1212,9 +1219,9 @@
             // 
             // BANAMEX
             // 
-            dataGridViewCellStyle14.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle14.Format = "N2";
-            BANAMEX.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle62.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle62.Format = "N2";
+            BANAMEX.DefaultCellStyle = dataGridViewCellStyle62;
             BANAMEX.HeaderText = "BANAMEX";
             BANAMEX.Name = "BANAMEX";
             BANAMEX.ReadOnly = true;

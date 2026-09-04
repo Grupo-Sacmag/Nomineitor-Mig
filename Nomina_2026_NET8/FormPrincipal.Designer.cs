@@ -32,24 +32,24 @@ namespace NOMINA_2025
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormPrincipal));
-            tsOpcionesNom = new ToolStrip();
-            toolStripDropDownButton1 = new ToolStripDropDownButton();
+            tsOpcionesNom = new MenuStrip();
+            tsPersonal = new ToolStripMenuItem();
             tsCRUDPersonal = new ToolStripMenuItem();
             tsmImpresion = new ToolStripMenuItem();
-            toolStripDropDownButton2 = new ToolStripDropDownButton();
+            tsNomina = new ToolStripMenuItem();
             tsmIniciarCaptura = new ToolStripMenuItem();
             tsmImpresionNomina = new ToolStripMenuItem();
-            toolStripDropDownButton5 = new ToolStripDropDownButton();
+            tsConfiguracion = new ToolStripMenuItem();
             tsDatosDeLaEmpresa = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             tsMostrarTarifasImpuestos = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             tsAcercaDe = new ToolStripMenuItem();
-            tsMostrar = new ToolStripDropDownButton();
+            tsMostrar = new ToolStripMenuItem();
             tsFiltrarArchivos = new ToolStripMenuItem();
             tsMostrarJSON = new ToolStripMenuItem();
             tsMostrarNOM = new ToolStripMenuItem();
-            tsAcumulado = new ToolStripDropDownButton();
+            tsAcumulado = new ToolStripMenuItem();
             AcumJSON = new ToolStripMenuItem();
             AcumNOM = new ToolStripMenuItem();
             iniciarCapturaToolStripMenuItem1 = new ToolStripMenuItem();
@@ -84,51 +84,48 @@ namespace NOMINA_2025
             // 
             // tsOpcionesNom
             // 
-            tsOpcionesNom.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripDropDownButton2, toolStripDropDownButton5, tsMostrar, tsAcumulado });
+            tsOpcionesNom.Items.AddRange(new ToolStripItem[] { tsPersonal, tsNomina, tsConfiguracion, tsMostrar, tsAcumulado });
             tsOpcionesNom.Location = new Point(0, 0);
             tsOpcionesNom.Name = "tsOpcionesNom";
-            tsOpcionesNom.Size = new Size(762, 25);
+            tsOpcionesNom.Size = new Size(762, 24);
             tsOpcionesNom.TabIndex = 0;
-            tsOpcionesNom.Text = "toolStrip1";
+            tsOpcionesNom.Text = "Menú de Opciones";
             // 
-            // toolStripDropDownButton1
+            // tsPersonal
             // 
-            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { tsCRUDPersonal, tsmImpresion });
-            toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(65, 22);
-            toolStripDropDownButton1.Text = "Personal";
+            tsPersonal.DropDownItems.AddRange(new ToolStripItem[] { tsCRUDPersonal, tsmImpresion });
+            tsPersonal.Name = "tsPersonal";
+            tsPersonal.ShortcutKeys = Keys.Alt | Keys.P;
+            tsPersonal.Size = new Size(64, 20);
+            tsPersonal.Text = "Personal";
             // 
             // tsCRUDPersonal
             // 
             tsCRUDPersonal.Name = "tsCRUDPersonal";
-            tsCRUDPersonal.ShortcutKeys = Keys.Control | Keys.Shift | Keys.E;
-            tsCRUDPersonal.Size = new Size(317, 22);
+            tsCRUDPersonal.ShortcutKeys = Keys.F1;
+            tsCRUDPersonal.Size = new Size(226, 22);
             tsCRUDPersonal.Text = "Agregar o Editar Personal";
             tsCRUDPersonal.Click += tsCRUDPersonal_Click;
             // 
             // tsmImpresion
             // 
             tsmImpresion.Name = "tsmImpresion";
-            tsmImpresion.Size = new Size(317, 22);
+            tsmImpresion.Size = new Size(226, 22);
             tsmImpresion.Text = "Impresión";
             tsmImpresion.Click += tsmImpresion_Click;
             // 
-            // toolStripDropDownButton2
+            // tsNomina
             // 
-            toolStripDropDownButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { tsmIniciarCaptura, tsmImpresionNomina });
-            toolStripDropDownButton2.Image = (Image)resources.GetObject("toolStripDropDownButton2.Image");
-            toolStripDropDownButton2.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton2.Name = "toolStripDropDownButton2";
-            toolStripDropDownButton2.Size = new Size(63, 22);
-            toolStripDropDownButton2.Text = "Nómina";
+            tsNomina.DropDownItems.AddRange(new ToolStripItem[] { tsmIniciarCaptura, tsmImpresionNomina });
+            tsNomina.Name = "tsNomina";
+            tsNomina.ShortcutKeys = Keys.Alt | Keys.N;
+            tsNomina.Size = new Size(62, 20);
+            tsNomina.Text = "Nómina";
             // 
             // tsmIniciarCaptura
             // 
             tsmIniciarCaptura.Name = "tsmIniciarCaptura";
-            tsmIniciarCaptura.ShortcutKeys = Keys.Control | Keys.I;
+            tsmIniciarCaptura.ShortcutKeys = Keys.F5;
             tsmIniciarCaptura.Size = new Size(238, 22);
             tsmIniciarCaptura.Text = "Captura";
             tsmIniciarCaptura.Click += tsmIniciarCaptura_Click;
@@ -141,62 +138,58 @@ namespace NOMINA_2025
             tsmImpresionNomina.Text = "Impresión";
             tsmImpresionNomina.Click += tsmImpresionNomina_Click;
             // 
-            // toolStripDropDownButton5
+            // tsConfiguracion
             // 
-            toolStripDropDownButton5.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton5.DropDownItems.AddRange(new ToolStripItem[] { tsDatosDeLaEmpresa, toolStripSeparator2, tsMostrarTarifasImpuestos, toolStripSeparator3, tsAcercaDe });
-            toolStripDropDownButton5.Image = (Image)resources.GetObject("toolStripDropDownButton5.Image");
-            toolStripDropDownButton5.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton5.Name = "toolStripDropDownButton5";
-            toolStripDropDownButton5.Size = new Size(96, 22);
-            toolStripDropDownButton5.Text = "Configuración";
+            tsConfiguracion.DropDownItems.AddRange(new ToolStripItem[] { tsDatosDeLaEmpresa, toolStripSeparator2, tsMostrarTarifasImpuestos, toolStripSeparator3, tsAcercaDe });
+            tsConfiguracion.Name = "tsConfiguracion";
+            tsConfiguracion.Size = new Size(95, 20);
+            tsConfiguracion.Text = "Configuración";
             // 
             // tsDatosDeLaEmpresa
             // 
             tsDatosDeLaEmpresa.Name = "tsDatosDeLaEmpresa";
-            tsDatosDeLaEmpresa.Size = new Size(181, 22);
+            tsDatosDeLaEmpresa.ShortcutKeys = Keys.Alt | Keys.E;
+            tsDatosDeLaEmpresa.Size = new Size(218, 22);
             tsDatosDeLaEmpresa.Text = "Datos de la Empresa";
             tsDatosDeLaEmpresa.Click += tsDatosDeLaEmpresa_Click;
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(178, 6);
+            toolStripSeparator2.Size = new Size(215, 6);
             // 
             // tsMostrarTarifasImpuestos
             // 
             tsMostrarTarifasImpuestos.Name = "tsMostrarTarifasImpuestos";
-            tsMostrarTarifasImpuestos.Size = new Size(181, 22);
+            tsMostrarTarifasImpuestos.ShortcutKeys = Keys.Alt | Keys.T;
+            tsMostrarTarifasImpuestos.Size = new Size(218, 22);
             tsMostrarTarifasImpuestos.Text = "Tablas de Impuestos";
             tsMostrarTarifasImpuestos.Click += tsMostrarTarifasImpuestos_Click;
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(178, 6);
+            toolStripSeparator3.Size = new Size(215, 6);
             // 
             // tsAcercaDe
             // 
             tsAcercaDe.Name = "tsAcercaDe";
-            tsAcercaDe.Size = new Size(181, 22);
+            tsAcercaDe.Size = new Size(218, 22);
             tsAcercaDe.Text = "Acerca de...";
             tsAcercaDe.Click += tsAcercaDe_Click;
             // 
             // tsMostrar
             // 
-            tsMostrar.DisplayStyle = ToolStripItemDisplayStyle.Text;
             tsMostrar.DropDownItems.AddRange(new ToolStripItem[] { tsFiltrarArchivos });
-            tsMostrar.Image = (Image)resources.GetObject("tsMostrar.Image");
-            tsMostrar.ImageTransparentColor = Color.Magenta;
             tsMostrar.Name = "tsMostrar";
-            tsMostrar.Size = new Size(61, 22);
+            tsMostrar.Size = new Size(60, 20);
             tsMostrar.Text = "Mostrar";
             // 
             // tsFiltrarArchivos
             // 
             tsFiltrarArchivos.DropDownItems.AddRange(new ToolStripItem[] { tsMostrarJSON, tsMostrarNOM });
             tsFiltrarArchivos.Name = "tsFiltrarArchivos";
-            tsFiltrarArchivos.Size = new Size(153, 22);
+            tsFiltrarArchivos.Size = new Size(180, 22);
             tsFiltrarArchivos.Text = "Filtrar Archivos";
             // 
             // tsMostrarJSON
@@ -217,7 +210,7 @@ namespace NOMINA_2025
             // 
             tsAcumulado.DropDownItems.AddRange(new ToolStripItem[] { AcumJSON, AcumNOM });
             tsAcumulado.Name = "tsAcumulado";
-            tsAcumulado.Size = new Size(82, 22);
+            tsAcumulado.Size = new Size(81, 20);
             tsAcumulado.Text = "Acumulado";
             // 
             // AcumJSON
@@ -456,7 +449,7 @@ namespace NOMINA_2025
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft YaHei UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label2.Location = new Point(587, 42);
+            label2.Location = new Point(586, 39);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
             label2.Size = new Size(56, 19);
@@ -466,7 +459,7 @@ namespace NOMINA_2025
             // cbUnidades
             // 
             cbUnidades.FormattingEnabled = true;
-            cbUnidades.Location = new Point(659, 40);
+            cbUnidades.Location = new Point(658, 37);
             cbUnidades.Margin = new Padding(4, 3, 4, 3);
             cbUnidades.Name = "cbUnidades";
             cbUnidades.Size = new Size(74, 23);
@@ -487,7 +480,7 @@ namespace NOMINA_2025
             // 
             lblRutaDirectorio.AutoSize = true;
             lblRutaDirectorio.Font = new Font("Microsoft YaHei UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblRutaDirectorio.Location = new Point(5, 59);
+            lblRutaDirectorio.Location = new Point(5, 63);
             lblRutaDirectorio.Margin = new Padding(4, 0, 4, 0);
             lblRutaDirectorio.Name = "lblRutaDirectorio";
             lblRutaDirectorio.Size = new Size(15, 19);
@@ -498,7 +491,7 @@ namespace NOMINA_2025
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft YaHei UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label1.Location = new Point(4, 40);
+            label1.Location = new Point(4, 44);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new Size(158, 19);
@@ -519,6 +512,7 @@ namespace NOMINA_2025
             Controls.Add(panelEmpresaNombre);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = tsOpcionesNom;
             Margin = new Padding(4, 3, 4, 3);
             MaximizeBox = false;
             Name = "FormPrincipal";
@@ -537,18 +531,17 @@ namespace NOMINA_2025
             panel1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
-
         }
 
         #endregion
 
-        private System.Windows.Forms.ToolStrip tsOpcionesNom;
-        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
+        private System.Windows.Forms.MenuStrip tsOpcionesNom;
+        private System.Windows.Forms.ToolStripMenuItem tsPersonal;
         private System.Windows.Forms.ToolStripMenuItem tsmImpresion;
-        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton2;
+        private System.Windows.Forms.ToolStripMenuItem tsNomina;
         private System.Windows.Forms.ToolStripMenuItem iniciarCapturaToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem tsmImpresionNomina;
-        private System.Windows.Forms.ToolStripDropDownButton tsMostrar;
+        private System.Windows.Forms.ToolStripMenuItem tsMostrar;
         private System.Windows.Forms.Panel panelEmpresaNombre;
         private System.Windows.Forms.Panel panelDatosEmpresa;
         private System.Windows.Forms.TreeView treeViewDirectorios;
@@ -556,36 +549,35 @@ namespace NOMINA_2025
         private System.Windows.Forms.ImageList imageListTree;
         private System.Windows.Forms.Label lblNAnio;
         private System.Windows.Forms.Label label5;
-        private ToolStripMenuItem tsmIniciarCaptura;
-        private Label lblUMA;
-        private Label lblSalarioMinimo;
-        private Label lblAnio;
-        private Label lblNUMA;
-        private Label lblNSalarioMinimo;
-        private Label lblEmpresa;
-        private Label Label;
-        private ToolStripMenuItem tsFiltrarArchivos;
-        private ToolStripMenuItem tsMostrarJSON;
-        private ToolStripMenuItem tsMostrarNOM;
-        private ToolStripDropDownButton tsAcumulado;
-        private ToolStripMenuItem AcumJSON;
-        private ToolStripMenuItem AcumNOM;
-        private ToolStripMenuItem tsCRUDPersonal;
-        private ToolStripDropDownButton toolStripDropDownButton5;
-        private ToolStripMenuItem tsDatosDeLaEmpresa;
-        private ToolStripSeparator toolStripSeparator2;
-        private ToolStripMenuItem tsMostrarTarifasImpuestos;
-        private ToolStripSeparator toolStripSeparator3;
-        private ToolStripMenuItem tsAcercaDe;
-        private Panel panel1;
-        private Button btnBuscarRutaDirectorio;
-        private TextBox txtBuscarRutaDirectorio;
-        private Label lblInsertarRuta;
-        private Label label2;
-        private ComboBox cbUnidades;
-        private Label label3;
-        private Label lblRutaDirectorio;
-        private Label label1;
+        private System.Windows.Forms.ToolStripMenuItem tsmIniciarCaptura;
+        private System.Windows.Forms.Label lblUMA;
+        private System.Windows.Forms.Label lblSalarioMinimo;
+        private System.Windows.Forms.Label lblAnio;
+        private System.Windows.Forms.Label lblNUMA;
+        private System.Windows.Forms.Label lblNSalarioMinimo;
+        private System.Windows.Forms.Label lblEmpresa;
+        private System.Windows.Forms.Label Label;
+        private System.Windows.Forms.ToolStripMenuItem tsFiltrarArchivos;
+        private System.Windows.Forms.ToolStripMenuItem tsMostrarJSON;
+        private System.Windows.Forms.ToolStripMenuItem tsMostrarNOM;
+        private System.Windows.Forms.ToolStripMenuItem tsAcumulado;
+        private System.Windows.Forms.ToolStripMenuItem AcumJSON;
+        private System.Windows.Forms.ToolStripMenuItem AcumNOM;
+        private System.Windows.Forms.ToolStripMenuItem tsCRUDPersonal;
+        private System.Windows.Forms.ToolStripMenuItem tsConfiguracion;
+        private System.Windows.Forms.ToolStripMenuItem tsDatosDeLaEmpresa;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem tsMostrarTarifasImpuestos;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem tsAcercaDe;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button btnBuscarRutaDirectorio;
+        private System.Windows.Forms.TextBox txtBuscarRutaDirectorio;
+        private System.Windows.Forms.Label lblInsertarRuta;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cbUnidades;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblRutaDirectorio;
+        private System.Windows.Forms.Label label1;
     }
 }
-

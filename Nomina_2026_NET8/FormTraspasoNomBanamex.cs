@@ -456,12 +456,7 @@ namespace Nomina_2026_NET8
 
             Clipboard.SetText(texto, TextDataFormat.Text);
 
-            MessageBox.Show(
-                "Información copiada correctamente.\n\nPega en Excel con Ctrl + V.",
-                "Copiado para Excel",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
+            MessageBox.Show("Información copiada correctamente.", "Copiado para Excel", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private static string ConstruirTextoTabuladoParaExcel(DataGridView dgv, bool incluirEncabezados)

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ByuqKnM/IlQ=",
+  "dgSpecHash": "hdSE+7Vnu6M=",
   "success": true,
-  "projectFilePath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+  "projectFilePath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\desarrollo.conta\\.nuget\\packages\\closedxml\\0.105.0\\closedxml.0.105.0.nupkg.sha512",
     "C:\\Users\\desarrollo.conta\\.nuget\\packages\\closedxml.parser\\2.0.0\\closedxml.parser.2.0.0.nupkg.sha512",
@@ -116,9 +116,9 @@
       "code": "NU1701",
       "level": "Warning",
       "message": "El paquete \"HtmlRenderer.Core 1.5.2\" se restauró con \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\" en lugar de la plataforma de destino del proyecto \"net8.0-windows7.0\". Puede que el paquete no sea totalmente compatible con el proyecto.",
-      "projectPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+      "projectPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+      "filePath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
       "libraryId": "HtmlRenderer.Core",
       "targetGraphs": [
         "net8.0-windows"
@@ -128,9 +128,9 @@
       "code": "NU1701",
       "level": "Warning",
       "message": "El paquete \"HtmlRenderer.PdfSharp 1.5.2\" se restauró con \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\" en lugar de la plataforma de destino del proyecto \"net8.0-windows7.0\". Puede que el paquete no sea totalmente compatible con el proyecto.",
-      "projectPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+      "projectPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+      "filePath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
       "libraryId": "HtmlRenderer.PdfSharp",
       "targetGraphs": [
         "net8.0-windows"

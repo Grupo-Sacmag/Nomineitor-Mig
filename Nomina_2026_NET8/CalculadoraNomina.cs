@@ -44,25 +44,50 @@ namespace Nomina_2026_NET8
         /// año fiscal 2026, alta 04/11/2024:
         /// antig = 2026 + 2 - 2024 = 4
         /// factor = 1.0534
-        public static int AntiguedadBaseImssVB6(string fechaAlta, int anoFiscal)
+        //public static int AntiguedadBaseImssVB6(string fechaAlta, int anoFiscal)
+        //{
+        //    if (string.IsNullOrWhiteSpace(fechaAlta))
+        //        return 1;
+
+        //    string[] partes = fechaAlta.Split('/');
+
+        //    if (partes.Length < 3 || !int.TryParse(partes[2], out int aoingr))
+        //        return 1;
+
+        //    if (aoingr < 100)
+        //    {
+        //        aoingr = aoingr > 50 ? aoingr + 1900 : aoingr + 2000;
+        //    }
+
+        //    if (aoingr < 1900)
+        //        return 1;
+
+        //    int antig = anoFiscal + 2 - aoingr;
+
+        //    return Math.Max(1, antig);
+        //}
+
+        /// Antigüedad día-exacta, réplica fiel de CalcularAntiguedad() del VB6 legado.
+        /// mesReferencia/diaReferencia son la quincena que se está calculando
+        /// (NO la fecha de corte real): 1ra quincena → día 15, 2da quincena → día 30
+        /// fijo (el VB6 nunca usa el último día real del mes aquí, es un hardcode literal).
+        public static int AntiguedadLegacyVB6(string fechaAlta, int mesReferencia, int diaReferencia, int anioFiscal)
         {
-            if (string.IsNullOrWhiteSpace(fechaAlta))
+            if (!DateTime.TryParseExact(fechaAlta, "dd/MM/yyyy", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out DateTime fecha))
                 return 1;
 
-            string[] partes = fechaAlta.Split('/');
+            int dIngr = fecha.Day, mIngr = fecha.Month, yIngr = fecha.Year;
+            if (yIngr < 1900) return 1;
 
-            if (partes.Length < 3 || !int.TryParse(partes[2], out int aoingr))
-                return 1;
+            int antig = anioFiscal - yIngr;
 
-            if (aoingr < 100)
-            {
-                aoingr = aoingr > 50 ? aoingr + 1900 : aoingr + 2000;
-            }
+            if (mesReferencia < mIngr)
+                antig--;
+            else if (mesReferencia == mIngr && diaReferencia < dIngr)
+                antig--;
 
-            if (aoingr < 1900)
-                return 1;
-
-            int antig = anoFiscal + 2 - aoingr;
+            antig++; // el legado siempre suma 1 al final
 
             return Math.Max(1, antig);
         }
@@ -429,17 +454,7 @@ namespace Nomina_2026_NET8
             if (emp == null || d == null || d.DiasTrabajados <= 0)
                 return 0m;
 
-            /*
-                VB6:
-                For late = 3 To 9
-                    sum(1) = sum(1) + ConNom1.TextMatrix(li, late)
-                Next
-
-                integrado = (sum(1) - p_vacacional + exe_nto) / diaseg * facto
-            */
-
-            decimal sumaColumnas3a9 = salarioPeriodo + d.HorasNormales + d.HorasDobles + d.HorasTriples + d.OF + d.PrimaVacacional + otrasPeriodo;
-            decimal primaVacacional = d.PrimaVacacional;
+            decimal baseFactorizable = salarioPeriodo + d.HorasNormales + d.HorasDobles + d.HorasTriples;
             decimal exentoIntegrable = 0m;
 
             if (d.PercepcionExenta > 0m)
@@ -452,13 +467,12 @@ namespace Nomina_2026_NET8
                     exentoIntegrable = 0m;
             }
 
-            // Compatibilidad con VB6 probado:
-            // empresa.ao + 2 - añoAlta
-            int anioBaseImss = ConstantesNomina.AntiguedadBaseImssVB6(emp.FechaAlta, _anioFiscal);
+            int mesReferencia = fechaCorteNomina.Month;
+            int diaReferencia = d.EsSegundaQuincena ? 30 : 15;
+            int antiguedad = ConstantesNomina.AntiguedadLegacyVB6(emp.FechaAlta, mesReferencia, diaReferencia, _anioFiscal);
+            decimal factor = ConstantesNomina.FactorSDIPorAnioBase(antiguedad);
 
-            decimal factor = ConstantesNomina.FactorSDIPorAnioBase(anioBaseImss);
-            decimal baseDiaria = (sumaColumnas3a9 - primaVacacional + exentoIntegrable) / d.DiasTrabajados;
-            decimal integrado = baseDiaria * factor;
+            decimal integrado = (baseFactorizable + exentoIntegrable) / d.DiasTrabajados * factor + (d.OF / d.DiasTrabajados) + (otrasPeriodo / d.DiasTrabajados);
 
             // Currency en VB6 trabaja con 4 decimales.
             integrado = Math.Round(integrado, 4, MidpointRounding.AwayFromZero);

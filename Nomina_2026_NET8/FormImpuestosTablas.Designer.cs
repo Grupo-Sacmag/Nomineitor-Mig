@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormImpuestosTablas));
-            tsOpcionesMostrarTabla = new ToolStrip();
+            tsOpcionesMostrarTabla = new MenuStrip();
             tsMostrarTabla = new ToolStripDropDownButton();
             tsArticulo113 = new ToolStripMenuItem();
             tsSubsidio114 = new ToolStripMenuItem();
@@ -44,18 +44,20 @@
             btnCancelar = new Button();
             btnModificar = new Button();
             btnGuardar = new Button();
+            imprimirToolStripMenuItem = new ToolStripMenuItem();
+            tsSeleccionarTodo = new ToolStripMenuItem();
             tsOpcionesMostrarTabla.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvTablaImpuestos).BeginInit();
             SuspendLayout();
             // 
             // tsOpcionesMostrarTabla
             // 
-            tsOpcionesMostrarTabla.Items.AddRange(new ToolStripItem[] { tsMostrarTabla });
+            tsOpcionesMostrarTabla.Items.AddRange(new ToolStripItem[] { tsMostrarTabla, tsSeleccionarTodo, imprimirToolStripMenuItem });
             tsOpcionesMostrarTabla.Location = new Point(0, 0);
             tsOpcionesMostrarTabla.Name = "tsOpcionesMostrarTabla";
-            tsOpcionesMostrarTabla.Size = new Size(507, 25);
+            tsOpcionesMostrarTabla.Size = new Size(507, 26);
             tsOpcionesMostrarTabla.TabIndex = 0;
-            tsOpcionesMostrarTabla.Text = "toolStrip1";
+            tsOpcionesMostrarTabla.Text = "MenuTablas";
             // 
             // tsMostrarTabla
             // 
@@ -64,34 +66,34 @@
             tsMostrarTabla.Image = (Image)resources.GetObject("tsMostrarTabla.Image");
             tsMostrarTabla.ImageTransparentColor = Color.Magenta;
             tsMostrarTabla.Name = "tsMostrarTabla";
-            tsMostrarTabla.Size = new Size(76, 22);
+            tsMostrarTabla.Size = new Size(76, 19);
             tsMostrarTabla.Text = "Ver Tabla...";
             // 
             // tsArticulo113
             // 
             tsArticulo113.Name = "tsArticulo113";
-            tsArticulo113.Size = new Size(145, 22);
+            tsArticulo113.Size = new Size(180, 22);
             tsArticulo113.Text = "Artículo 113";
             tsArticulo113.Click += tsArticulo113_Click;
             // 
             // tsSubsidio114
             // 
             tsSubsidio114.Name = "tsSubsidio114";
-            tsSubsidio114.Size = new Size(145, 22);
+            tsSubsidio114.Size = new Size(180, 22);
             tsSubsidio114.Text = "Subsidio 114";
             tsSubsidio114.Click += tsSubsidio114_Click;
             // 
             // tsISRAnual117
             // 
             tsISRAnual117.Name = "tsISRAnual117";
-            tsISRAnual117.Size = new Size(145, 22);
+            tsISRAnual117.Size = new Size(180, 22);
             tsISRAnual117.Text = "ISR Anual 117";
             tsISRAnual117.Click += tsISRAnual117_Click;
             // 
             // tsISRMensual
             // 
             tsISRMensual.Name = "tsISRMensual";
-            tsISRMensual.Size = new Size(145, 22);
+            tsISRMensual.Size = new Size(180, 22);
             tsISRMensual.Text = "ISR Mensual";
             tsISRMensual.Click += tsISRMensual_Click;
             // 
@@ -179,6 +181,20 @@
             btnGuardar.UseVisualStyleBackColor = true;
             btnGuardar.Click += btnGuardar_Click;
             // 
+            // imprimirToolStripMenuItem
+            // 
+            imprimirToolStripMenuItem.Name = "imprimirToolStripMenuItem";
+            imprimirToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.P;
+            imprimirToolStripMenuItem.Size = new Size(65, 22);
+            imprimirToolStripMenuItem.Text = "Imprimir";
+            // 
+            // tsSeleccionarTodo
+            // 
+            tsSeleccionarTodo.Name = "tsSeleccionarTodo";
+            tsSeleccionarTodo.ShortcutKeys = Keys.Control | Keys.Shift | Keys.C;
+            tsSeleccionarTodo.Size = new Size(109, 22);
+            tsSeleccionarTodo.Text = "Seleccionar Todo";
+            // 
             // FormImpuestosTablas
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -204,7 +220,7 @@
 
         #endregion
 
-        private ToolStrip tsOpcionesMostrarTabla;
+        private MenuStrip tsOpcionesMostrarTabla;
         private ToolStripDropDownButton tsMostrarTabla;
         private ToolStripMenuItem tsArticulo113;
         private ToolStripMenuItem tsSubsidio114;
@@ -219,5 +235,7 @@
         private DataGridViewTextBoxColumn LimSuperior;
         private DataGridViewTextBoxColumn CuotaFija;
         private DataGridViewTextBoxColumn PorcentajeExcedente;
+        private ToolStripMenuItem tsSeleccionarTodo;
+        private ToolStripMenuItem imprimirToolStripMenuItem;
     }
 }

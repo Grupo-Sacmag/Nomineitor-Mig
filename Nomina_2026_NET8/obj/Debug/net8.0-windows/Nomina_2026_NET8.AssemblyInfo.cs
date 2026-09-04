@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Nomina_2026_NET8")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9f169ae3ee4760eee7fc8f4f1603e2ccfbd3e8ad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+581a116db3a51015566d1c1d8328f0b3fb935c78")]
 [assembly: System.Reflection.AssemblyProductAttribute("Nomina_2026_NET8")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Nomina_2026_NET8")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

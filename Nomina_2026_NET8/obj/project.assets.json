@@ -5751,11 +5751,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+      "projectUniqueName": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
       "projectName": "Nomina_2026_NET8",
-      "projectPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
+      "projectPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\Nomina_2026_NET8.csproj",
       "packagesPath": "C:\\Users\\desarrollo.conta\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\obj\\",
+      "outputPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

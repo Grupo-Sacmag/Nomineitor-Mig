@@ -112,19 +112,22 @@ namespace Nomina_2026_NET8
             return string.IsNullOrWhiteSpace(e.FechaBaja) ? "ACTIVO" : "BAJA";
         }
 
-        /// Calcula el salario diario integrado con la misma fórmula usada en el resto
-        /// del sistema (FormEDICIONCENTRALPERSONAL). Extraído aquí para no duplicar la
-        /// lógica entre la carga inicial (migración de RUEP viejos sin el campo) y
-        /// cualquier otro punto que necesite recalcular.
         private static decimal CalcularSalarioIntegrado(decimal sueldo, decimal viaticos, decimal otras, string fechaAltaParaCalculo, int anoFiscal, decimal umaPorDia)
         {
             decimal total = sueldo + viaticos + otras;
             if (total <= 0m || umaPorDia <= 0m)
                 return 0m;
 
-            int anioBaseImss = ConstantesNomina.AntiguedadBaseImssVB6(fechaAltaParaCalculo, anoFiscal);
-            decimal factor = ConstantesNomina.FactorSDIPorAnioBase(anioBaseImss);
-            decimal calculado = Math.Round(total * factor, 4, MidpointRounding.AwayFromZero);
+            // Réplica de checar() Casos 7/9 del VB6: solo "sueldo" se factoriza,
+            // viáticos y otras se suman directo sin multiplicar por el factor.
+            // Antigüedad usa fecha actual del sistema (rama de repliegue de
+            // CalcularAntiguedad cuando no hay quincena de Form8 seleccionada).
+            int mesReferencia = DateTime.Now.Month;
+            int diaReferencia = DateTime.Now.Day;
+            int antiguedad = ConstantesNomina.AntiguedadLegacyVB6(fechaAltaParaCalculo, mesReferencia, diaReferencia, anoFiscal);
+            decimal factor = ConstantesNomina.FactorSDIPorAnioBase(antiguedad);
+
+            decimal calculado = Math.Round((sueldo * factor) + viaticos + otras, 4, MidpointRounding.AwayFromZero);
             decimal tope = Math.Round(25m * umaPorDia, 2, MidpointRounding.AwayFromZero);
 
             return Math.Min(calculado, tope);

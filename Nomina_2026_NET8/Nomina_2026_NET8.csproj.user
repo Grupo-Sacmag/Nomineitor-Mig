@@ -25,6 +25,9 @@
     <Compile Update="FormPassword.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="FormPersonalVistaClasica.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="FormPrincipal.cs">
       <SubType>Form</SubType>
     </Compile>
