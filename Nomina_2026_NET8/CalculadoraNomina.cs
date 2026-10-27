@@ -16,7 +16,7 @@ namespace Nomina_2026_NET8
         {
             if (!DateTime.TryParseExact(fechaAltaTexto, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fechaAlta))
             {
-                return 0;
+                return 0;                
             }
 
             return AntiguedadPorDiaExacto(fechaAlta, fechaCorte);
@@ -235,15 +235,15 @@ namespace Nomina_2026_NET8
             if (_tablas.tablas.ISR_MENSUAL == null || !_tablas.tablas.ISR_MENSUAL.Any())
                 throw new InvalidOperationException("La tabla ISR_MENSUAL no está cargada.\nRegenera TablasTarifa.dat con TablasGenerator.");
 
-            decimal ispt = 0m, subsidio = 0m, porc = 0m;
+            decimal ispt = 0m, porc = 0m;
 
             var rango = BuscarEnTabla(_tablas.tablas.ISR_MENSUAL, ingresoGravable);
             if (rango != null)
                 (ispt, porc) = AplicarTarifa(rango, ingresoGravable);
 
-            var rSub = BuscarEnTabla(_tablas.tablas.SUBSIDIO_MENSUAL, ingresoGravable);
-            if (rSub != null)
-                subsidio = rSub.cuotaFija;
+            // El VB6 legado (calculoRetencion, rama Option4 = 2ª quincena) nunca calcula subsidio en este flujo — el bloque de cálculo de subdio existe únicamente
+            // dentro de la rama Option3 (1ª quincena). Coincide con la regla de negocio US-MIG-001: los ingresos de la empresa superan el tope legal de subsidio.
+            decimal subsidio = 0m;
 
             return new ResultadoISR
             {

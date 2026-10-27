@@ -29,12 +29,15 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormImpuestosTablas));
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tsOpcionesMostrarTabla = new MenuStrip();
             tsMostrarTabla = new ToolStripDropDownButton();
             tsArticulo113 = new ToolStripMenuItem();
             tsSubsidio114 = new ToolStripMenuItem();
             tsISRAnual117 = new ToolStripMenuItem();
             tsISRMensual = new ToolStripMenuItem();
+            tsSeleccionarTodo = new ToolStripMenuItem();
+            imprimirToolStripMenuItem = new ToolStripMenuItem();
             lblTablaMostrada = new Label();
             dgvTablaImpuestos = new DataGridView();
             LimInferior = new DataGridViewTextBoxColumn();
@@ -44,8 +47,6 @@
             btnCancelar = new Button();
             btnModificar = new Button();
             btnGuardar = new Button();
-            imprimirToolStripMenuItem = new ToolStripMenuItem();
-            tsSeleccionarTodo = new ToolStripMenuItem();
             tsOpcionesMostrarTabla.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvTablaImpuestos).BeginInit();
             SuspendLayout();
@@ -72,30 +73,44 @@
             // tsArticulo113
             // 
             tsArticulo113.Name = "tsArticulo113";
-            tsArticulo113.Size = new Size(180, 22);
+            tsArticulo113.Size = new Size(145, 22);
             tsArticulo113.Text = "Artículo 113";
             tsArticulo113.Click += tsArticulo113_Click;
             // 
             // tsSubsidio114
             // 
             tsSubsidio114.Name = "tsSubsidio114";
-            tsSubsidio114.Size = new Size(180, 22);
+            tsSubsidio114.Size = new Size(145, 22);
             tsSubsidio114.Text = "Subsidio 114";
             tsSubsidio114.Click += tsSubsidio114_Click;
             // 
             // tsISRAnual117
             // 
             tsISRAnual117.Name = "tsISRAnual117";
-            tsISRAnual117.Size = new Size(180, 22);
+            tsISRAnual117.Size = new Size(145, 22);
             tsISRAnual117.Text = "ISR Anual 117";
             tsISRAnual117.Click += tsISRAnual117_Click;
             // 
             // tsISRMensual
             // 
             tsISRMensual.Name = "tsISRMensual";
-            tsISRMensual.Size = new Size(180, 22);
+            tsISRMensual.Size = new Size(145, 22);
             tsISRMensual.Text = "ISR Mensual";
             tsISRMensual.Click += tsISRMensual_Click;
+            // 
+            // tsSeleccionarTodo
+            // 
+            tsSeleccionarTodo.Name = "tsSeleccionarTodo";
+            tsSeleccionarTodo.ShortcutKeys = Keys.Control | Keys.Shift | Keys.C;
+            tsSeleccionarTodo.Size = new Size(109, 22);
+            tsSeleccionarTodo.Text = "Seleccionar Todo";
+            // 
+            // imprimirToolStripMenuItem
+            // 
+            imprimirToolStripMenuItem.Name = "imprimirToolStripMenuItem";
+            imprimirToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.P;
+            imprimirToolStripMenuItem.Size = new Size(65, 22);
+            imprimirToolStripMenuItem.Text = "Imprimir";
             // 
             // lblTablaMostrada
             // 
@@ -109,6 +124,14 @@
             // 
             // dgvTablaImpuestos
             // 
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvTablaImpuestos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dgvTablaImpuestos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvTablaImpuestos.Columns.AddRange(new DataGridViewColumn[] { LimInferior, LimSuperior, CuotaFija, PorcentajeExcedente });
             dgvTablaImpuestos.Location = new Point(12, 64);
@@ -180,20 +203,6 @@
             btnGuardar.Text = "Guardar";
             btnGuardar.UseVisualStyleBackColor = true;
             btnGuardar.Click += btnGuardar_Click;
-            // 
-            // imprimirToolStripMenuItem
-            // 
-            imprimirToolStripMenuItem.Name = "imprimirToolStripMenuItem";
-            imprimirToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.P;
-            imprimirToolStripMenuItem.Size = new Size(65, 22);
-            imprimirToolStripMenuItem.Text = "Imprimir";
-            // 
-            // tsSeleccionarTodo
-            // 
-            tsSeleccionarTodo.Name = "tsSeleccionarTodo";
-            tsSeleccionarTodo.ShortcutKeys = Keys.Control | Keys.Shift | Keys.C;
-            tsSeleccionarTodo.Size = new Size(109, 22);
-            tsSeleccionarTodo.Text = "Seleccionar Todo";
             // 
             // FormImpuestosTablas
             // 

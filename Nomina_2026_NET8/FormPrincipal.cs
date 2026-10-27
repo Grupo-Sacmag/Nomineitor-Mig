@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.CustomProperties;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Nomina_2026_NET8;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,22 @@ namespace NOMINA_2025
 
         [Flags]
         public enum CapacidadesDirectorio { Ninguna = 0, Empresa = 1, Personal = 2, Nomina = 4, AcumuladosJSON = 8, AcumuladosNOM = 16 }
+
+        private static readonly Dictionary<string, int> MesesOrden = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ENE"] = 1,
+            ["FEB"] = 2,
+            ["MAR"] = 3,
+            ["ABR"] = 4,
+            ["MAY"] = 5,
+            ["JUN"] = 6,
+            ["JUL"] = 7,
+            ["AGO"] = 8,
+            ["SEP"] = 9,
+            ["OCT"] = 10,
+            ["NOV"] = 11,
+            ["DIC"] = 12
+        };
 
         public FormPrincipal()
         {
@@ -54,24 +71,24 @@ namespace NOMINA_2025
 
         private void FormPrincipal_Shown(object sender, EventArgs e)
         {
-            // Aviso de conectividad — no bloquea
-            //if (!BDSyncService.TestConexion(out _))
-            //{
-            //    MessageBox.Show("No hay conexión con la base de datos.\n\nPuedes seguir trabajando con los datos del RUEP.dat.\n" + "La sincronización se omitirá hasta que recuperes conexión.",
-            //        "Sin conexión a BD", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //}
-
-            // Restaurar directorio guardado
             string rutaGuardada = Nomina_2026_NET8.Properties.Settings.Default.RutaSeleccionada;
             if (string.IsNullOrWhiteSpace(rutaGuardada)) return;
 
-            if (Directory.Exists(rutaGuardada))
-                SeleccionarYExpandirRuta(rutaGuardada);
+            string rutaValida = ObtenerRutaValidaMasCercana(rutaGuardada);
+
+            if (rutaValida != null)
+            {
+                SeleccionarYExpandirRuta(rutaValida);
+
+                if (!string.Equals(rutaValida, rutaGuardada, StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show($"El directorio guardado ya no está disponible:\n{rutaGuardada}\n\n" + $"Se seleccionó el directorio accesible más cercano:\n{rutaValida}",
+                        "Directorio no encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
             else
             {
-                MessageBox.Show($"El directorio guardado ya no está disponible:\n{rutaGuardada}\n\nDeberás seleccionarlo nuevamente.", "Directorio no encontrado", MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
+                // Ni siquiera la raíz del drive existe (ej. unidad de red desconectada) → último recurso
                 string escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 if (Directory.Exists(escritorio))
                     SeleccionarYExpandirRuta(escritorio);
@@ -183,13 +200,18 @@ namespace NOMINA_2025
         }
 
         // ── Eventos de ListBox ────────────────────────────────────────────
-        private void listBoxArchivos_DoubleClick(object sender, EventArgs e) => AbrirArchivoSeleccionado();
+        private void listBoxArchivos_DoubleClick(object sender, EventArgs e)
+        {
+            if (EsFilaSeparador(listBoxArchivos.SelectedItem)) return;
+            AbrirArchivoSeleccionado();
+        }
 
         private void listBoxArchivos_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                AbrirArchivoSeleccionado();
+                if (!EsFilaSeparador(listBoxArchivos.SelectedItem))
+                    AbrirArchivoSeleccionado();
                 e.Handled = true;
             }
         }
@@ -247,7 +269,8 @@ namespace NOMINA_2025
 
         private void tsAcercaDe_Click(object sender, EventArgs e)
         {
-
+            FormVersion frmVersion = new FormVersion();
+            frmVersion.ShowDialog();
         }
 
         // ── Eventos de toolbar — Mostrar ──────────────────────────────────
@@ -302,13 +325,9 @@ namespace NOMINA_2025
             AplicarPermisos(EvaluarDirectorio(ruta));
             IniciarWatcherDirectorio(ruta);
 
-            // Sync silencioso al navegar a un directorio con RUEP
-            //string rutaRUEP = Path.Combine(ruta, "RUEP.dat");
-            //if (File.Exists(rutaRUEP))
-            //{
-            //    IntentarSincronizarRUEP(rutaRUEP, mostrarAvisoSinConexion: false);
-            //    InterpretarYMostrarEmpre(ruta);
-            //}
+            // Guardar SIEMPRE que se aplique una ruta válida, no solo al capturar nómina
+            Nomina_2026_NET8.Properties.Settings.Default.RutaSeleccionada = ruta;
+            Nomina_2026_NET8.Properties.Settings.Default.Save();
         }
 
         private void BuscarRutaManual()
@@ -507,10 +526,7 @@ namespace NOMINA_2025
                     return;
 
                 IEnumerable<string> allFiles;
-                try
-                {
-                    allFiles = Directory.EnumerateFiles(path);
-                }
+                try { allFiles = Directory.EnumerateFiles(path); }
                 catch (UnauthorizedAccessException)
                 {
                     MessageBox.Show("No tiene permisos para leer la carpeta seleccionada.", "Permisos insuficientes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -519,14 +535,24 @@ namespace NOMINA_2025
 
                 bool verJSON = string.Equals(_filtroActual, "*.JSON", StringComparison.OrdinalIgnoreCase);
 
-                var files = allFiles.Where(f => !string.Equals(Path.GetFileName(f), "RUEP.dat", StringComparison.OrdinalIgnoreCase)).Where(f =>
+                var nombres = allFiles.Where(f => !string.Equals(Path.GetFileName(f), "RUEP.dat", StringComparison.OrdinalIgnoreCase)).Where(f =>
                 {
                     string name = Path.GetFileName(f);
                     return verJSON ? name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) : name.EndsWith(".nom", StringComparison.OrdinalIgnoreCase);
-                }).OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase).Select(Path.GetFileName).ToArray();
+                }).Select(Path.GetFileName).ToList();
 
-                if (files.Length > 0)
-                    listBoxArchivos.Items.AddRange(files);
+                var clasificados = nombres.Select(ClasificarArchivo).ToList();
+                var normales = clasificados.Where(a => a.EsNormal).OrderBy(a => a.Anio).ThenBy(a => a.Mes).ThenBy(a => a.Quincena).ToList();
+                var especiales = clasificados.Where(a => !a.EsNormal).OrderBy(a => a.Numero).ThenBy(a => a.Concepto, StringComparer.CurrentCultureIgnoreCase).ToList();
+
+                if (normales.Count > 0)
+                    listBoxArchivos.Items.AddRange(normales.Select(a => (object)a.NombreArchivo).ToArray());
+
+                if (normales.Count > 0 && especiales.Count > 0)
+                    listBoxArchivos.Items.Add(SeparadorEspeciales);
+
+                if (especiales.Count > 0)
+                    listBoxArchivos.Items.AddRange(especiales.Select(a => (object)a.NombreArchivo).ToArray());
             }
             catch (Exception ex)
             {
@@ -544,6 +570,10 @@ namespace NOMINA_2025
             lblAnio.Text = string.Empty;
             lblSalarioMinimo.Text = string.Empty;
             lblUMA.Text = string.Empty;
+
+            EmpresaNombre = string.Empty;
+            anioEmpresa = 0;
+            salarioMinimo = 0m;
         }
 
         // Solo rama RUEP.dat — rama EMPRESA.dno eliminada (código muerto)
@@ -551,56 +581,162 @@ namespace NOMINA_2025
         {
             string rutaRUEP = Path.Combine(directoryPath, "RUEP.dat");
 
+            // ====================================================
+            // CASO 1: EXISTE RUEP.DAT
+            // Lectura directa del formato RUEP V9
+            // ====================================================
+
             if (File.Exists(rutaRUEP))
             {
                 try
                 {
-                    var svc = new RuepService(rutaRUEP);
-                    var empresa = svc.DatosEmpresa;
+                    // Descifrar y leer el JSON sin modificarlo.
+                    JObject datos = CryptoService.LoadEncrypted<JObject>(rutaRUEP);
 
-                    var fmt = new System.Globalization.NumberFormatInfo
-                    { CurrencySymbol = "$", CurrencyDecimalDigits = 2 };
+                    if (datos == null)
+                        throw new InvalidDataException("No fue posible obtener los datos del RUEP.");
 
-                    lblEmpresa.Text = empresa.nombre;
-                    EmpresaNombre = empresa.nombre;
-                    lblAnio.Text = empresa.ano_fiscal.ToString();
-                    lblSalarioMinimo.Text = empresa.salario_minimo.ToString("C", fmt);
-                    lblUMA.Text = empresa.uma_por_dia.ToString("C", fmt);
+                    // PRUEBA TEMPORAL DE DESERIALIZACIÓN RUEP V9
+                    var modeloV9 = datos.ToObject<RuepRoot>();
 
-                    salarioMinimo = empresa.salario_minimo;
-                    anioEmpresa = empresa.ano_fiscal;
+                    if (modeloV9 == null)
+                        throw new InvalidDataException("No se pudo interpretar el modelo V9.");
+
+                    if (modeloV9.ano_fiscal != datos.Value<int>("anio_fiscal"))
+                        throw new InvalidDataException("Error al interpretar anio_fiscal.");
+
+                    if (modeloV9.datos_fiscales?.registro_patronal !=
+                        (string)datos["datos_fiscales"]?["registro_patronal_empresa"])
+                    {
+                        throw new InvalidDataException("Error al interpretar el registro patronal.");
+                    }
+
+                    if (modeloV9.personal == null || modeloV9.personal.Count == 0)
+                        throw new InvalidDataException("No se pudieron interpretar los empleados.");
+
+                    var empleado = modeloV9.personal[0];
+                    var empleadoJson = datos["personal"][0];
+
+                    if (empleado.imss != (string)empleadoJson["nss_imss"])
+                        throw new InvalidDataException("Error al interpretar nss_imss.");
+
+                    if (empleado.salario_integrado !=
+                        (decimal?)empleadoJson["ingresos"]?["integrado"])
+                    {
+                        throw new InvalidDataException("Error al interpretar ingresos.integrado.");
+                    }
+
+                    if (empleado.historial_laboral?.Count !=
+                        (empleadoJson["historial_laboral"] as JArray)?.Count)
+                    {
+                        throw new InvalidDataException("Error al interpretar historial_laboral.");
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"RUEP V9 interpretado correctamente. " + $"Empleados: {modeloV9.personal.Count}");
+
+                    // Comprobar la estructura principal de V9.
+                    if (datos["datos_fiscales"] is not JObject || datos["cfdi_nomina"] is not JObject || datos["personal"] is not JArray)
+                    {
+                        throw new InvalidDataException("El archivo no contiene la estructura esperada de RUEP V9.");
+                    }
+
+                    // ====================================================
+                    // CAMPOS GENERALES DE EMPRESA - RUEP V9
+                    // ====================================================
+
+                    string nombreEmpresa = datos.Value<string>("nombre") ?? "";
+                    int? anioFiscal = datos.Value<int?>("anio_fiscal");
+                    decimal? salarioMinimoV9 = datos.Value<decimal?>("salario_minimo");
+                    decimal? umaPorDiaV9 = datos.Value<decimal?>("uma_por_dia");
+                    
+                    // Validar campos indispensables.
+                    if (string.IsNullOrWhiteSpace(nombreEmpresa) || !anioFiscal.HasValue || anioFiscal.Value <= 0 || !salarioMinimoV9.HasValue || !umaPorDiaV9.HasValue)
+                    {
+                        throw new InvalidDataException("Faltan datos generales obligatorios en RUEP V9.");
+                    }
+
+                    // ====================================================
+                    // FORMATO MONETARIO
+                    // ====================================================
+
+                    var formato = new System.Globalization.NumberFormatInfo
+                    {
+                        CurrencySymbol = "$",
+                        CurrencyDecimalDigits = 2
+                    };
+
+                    // ====================================================
+                    // MOSTRAR DATOS EN FORMPRINCIPAL
+                    // ====================================================
+
+                    lblEmpresa.Text = nombreEmpresa;
+                    lblAnio.Text = anioFiscal.Value.ToString();
+                    lblSalarioMinimo.Text = salarioMinimoV9.Value.ToString("C", formato);
+                    lblUMA.Text = umaPorDiaV9.Value.ToString("C", formato);
+
+                    // ====================================================
+                    // VARIABLES INTERNAS
+                    // ====================================================
+
+                    EmpresaNombre = nombreEmpresa;
+                    anioEmpresa = anioFiscal.Value;
+                    salarioMinimo = salarioMinimoV9.Value;
                 }
-                catch
+                catch (Exception ex)
                 {
                     LimpiarLabels();
+
+                    lblEmpresa.Text = "Error al leer RUEP.dat";
+
+                    MessageBox.Show("No fue posible interpretar RUEP V9.\n\n" + "Archivo:\n" + rutaRUEP + "\n\n" + "Detalle:\n" + ex.Message, "Error de lectura RUEP V9", MessageBoxButtons.OK, MessageBoxIcon.Error
+                    );
                 }
+
                 return;
             }
+
+            // ====================================================
+            // CASO 2: NO EXISTE RUEP.DAT
+            // Lectura provisional de encabezado VB6
+            // ====================================================
 
             if (ExistenArchivosBaseParaRuep(directoryPath))
             {
                 try
                 {
-                    var encabezado = new RuepGenerator().LeerEncabezadoEmpresa(directoryPath);
+                    var encabezado =
+                        new RuepGenerator().LeerEncabezadoEmpresa(directoryPath);
 
-                    var fmt = new System.Globalization.NumberFormatInfo
-                    { CurrencySymbol = "$", CurrencyDecimalDigits = 2 };
+                    var formato = new System.Globalization.NumberFormatInfo
+                    {
+                        CurrencySymbol = "$",
+                        CurrencyDecimalDigits = 2
+                    };
 
                     lblEmpresa.Text = encabezado.Nombre;
-                    EmpresaNombre = encabezado.Nombre;
                     lblAnio.Text = encabezado.AnoFiscal.ToString();
-                    lblSalarioMinimo.Text = encabezado.SalarioMinimo.ToString("C", fmt);
-                    lblUMA.Text = encabezado.Uma.ToString("C", fmt);
 
-                    salarioMinimo = encabezado.SalarioMinimo;
+                    lblSalarioMinimo.Text =
+                        encabezado.SalarioMinimo.ToString("C", formato);
+
+                    lblUMA.Text =
+                        encabezado.Uma.ToString("C", formato);
+
+                    EmpresaNombre = encabezado.Nombre;
                     anioEmpresa = encabezado.AnoFiscal;
+                    salarioMinimo = encabezado.SalarioMinimo;
                 }
                 catch
                 {
                     LimpiarLabels();
                 }
+
                 return;
             }
+
+            // ====================================================
+            // CASO 3: SIN INFORMACIÓN DE EMPRESA
+            // ====================================================
 
             LimpiarLabels();
         }
@@ -722,12 +858,30 @@ namespace NOMINA_2025
 
         private void AbrirFormEdicionPersonal(string rutaRUEP)
         {
-            //IntentarSincronizarRUEP(rutaRUEP, mostrarAvisoSinConexion: true);
+            try
+            {
+                SyncResult sync = BDSyncService.SincronizarRUEP(rutaRUEP);
+
+                if (sync.Discrepancias.Any())
+                {
+                    MessageBox.Show($"Se detectaron {sync.Discrepancias.Count} discrepancias.", "Sincronización", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error de sincronización");
+            }
 
             this.Visible = false;
+
             using var form = new FormEDICIONCENTRALPERSONAL
-            { RutaRUEP = rutaRUEP };
+            {
+                RutaRUEP = rutaRUEP
+            };
+
             form.ShowDialog();
+
             this.Visible = true;
         }
 
@@ -774,6 +928,14 @@ namespace NOMINA_2025
             {
                 new RuepGenerator().Generar(rutaTrabajo);
 
+                var sync = BDSyncService.SincronizarRUEP(rutaRUEP);
+
+                if (sync.TieneDiscrepancias)
+                {
+                    MessageBox.Show(string.Join(Environment.NewLine + Environment.NewLine, sync.Discrepancias), "Discrepancias encontradas", MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+
                 MessageBox.Show("RUEP.dat generado correctamente.\n\nSe recomienda verificar los datos del personal antes de continuar.", "RUEP generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Sync inmediato tras generar
@@ -795,45 +957,6 @@ namespace NOMINA_2025
             string[] requeridos = { "empresa.dno", "Empcomp.dno", "personal.dno", "PerOtre.dno", "Perscfdi.dno", "Bnxcla.dno" };
             return requeridos.All(f => File.Exists(Path.Combine(ruta, f)));
         }
-
-        // ── Sincronización con BD ─────────────────────────────────────────
-        //private bool IntentarSincronizarRUEP(string rutaRUEP, bool mostrarAvisoSinConexion = false)
-        //{
-        //    if (!BDSyncService.TestConexion(out _))
-        //    {
-        //        if (mostrarAvisoSinConexion)
-        //            MessageBox.Show("Sin conexión a la base de datos.\nSe trabajará con los datos locales del RUEP.dat.", "Sin conexión", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //        return false;
-        //    }
-        //
-        //    try
-        //    {
-        //        Cursor = Cursors.WaitCursor;
-        //        SyncResult sync = BDSyncService.SincronizarRUEP(rutaRUEP);
-        //        Cursor = Cursors.Default;
-        //
-        //        if (!sync.HuboCambios) return true;
-        //
-        //        var svc = new RuepService(rutaRUEP);
-        //        var sinSalario = svc.ObtenerTodos().Where(e => e.SalarioDiario == 0m && string.IsNullOrWhiteSpace(e.FechaBaja) && !string.IsNullOrWhiteSpace(e.Nombre)).ToList();
-        //
-        //        string msg = $"Datos del personal actualizados desde la base de datos.\n\n" + $"• Empleados nuevos  : {sync.Nuevos}\n" + $"• Actualizados      : {sync.Actualizados}";
-        //
-        //        if (sinSalario.Count > 0)
-        //            msg += $"\n\n⚠ {sinSalario.Count} empleado(s) sin salario " + $"registrado:\n• " + string.Join("\n• ", sinSalario.Take(5).Select(e => $"{e.ApellidoP} {e.ApellidoM} {e.Nombre}")) +
-        //                (sinSalario.Count > 5 ? $"\n  ...y {sinSalario.Count - 5} más." : "");
-        //
-        //        MessageBox.Show(msg, "Sincronización BD", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Cursor = Cursors.Default;
-        //        MessageBox.Show($"No se pudo sincronizar con la BD:\n\n{ex.Message}\n\nSe usarán los datos locales del RUEP.dat.", "Error de sincronización", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        //        return false;
-        //    }
-        //}
 
         // ── Tablas fiscales ───────────────────────────────────────────────
         private void VerificarTablasTarifa()
@@ -918,10 +1041,81 @@ namespace NOMINA_2025
             base.OnFormClosed(e);
         }
 
-        private void listBoxArchivos_SelectedIndexChanged(object sender, EventArgs e)
+        private string ObtenerRutaValidaMasCercana(string ruta)
         {
+            if (string.IsNullOrWhiteSpace(ruta)) return null;
 
+            try
+            {
+                var dir = new DirectoryInfo(ruta);
+                while (dir != null)
+                {
+                    if (dir.Exists) return dir.FullName;
+                    dir = dir.Parent;
+                }
+            }
+            catch { /* ruta malformada o inaccesible */ }
+
+            return null;
         }
 
+        // MES(3) + QUINCENA(1) + AÑO(4): ej. SEP22026.NOM, SEP12026.JSON
+        private static readonly Regex RegexNominaNormal = new(@"^(?<mes>ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)(?<q>[12])(?<anio>\d{4})\.(NOM|JSON)$", 
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        // [NUMERO opcional][CONCEPTO]: ej. 1FINIQUITOS.NOM, 21FINIQUITOS.NOM, 3PTU.NOM
+        private static readonly Regex RegexNominaEspecial = new(@"^(?<num>\d+)?(?<concepto>[A-ZÁÉÍÓÚÑ]+)\.(NOM|JSON)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private const string SeparadorEspeciales = "──────────────── ESPECIALES ────────────────";
+        private class ArchivoNomina
+        {
+            public string NombreArchivo;
+            public bool EsNormal;
+            public int Anio, Mes, Quincena;
+            public long Numero;
+            public string Concepto;
+        }
+
+        private ArchivoNomina ClasificarArchivo(string nombreArchivo)
+        {
+            var mNormal = RegexNominaNormal.Match(nombreArchivo);
+            if (mNormal.Success)
+            {
+                return new ArchivoNomina
+                {
+                    NombreArchivo = nombreArchivo,
+                    EsNormal = true,
+                    Mes = MesesOrden[mNormal.Groups["mes"].Value.ToUpperInvariant()],
+                    Quincena = int.Parse(mNormal.Groups["q"].Value),
+                    Anio = int.Parse(mNormal.Groups["anio"].Value)
+                };
+            }
+
+            var mEspecial = RegexNominaEspecial.Match(nombreArchivo);
+            long numero = 0;
+            string concepto = Path.GetFileNameWithoutExtension(nombreArchivo);
+
+            if (mEspecial.Success)
+            {
+                if (mEspecial.Groups["num"].Success)
+                    long.TryParse(mEspecial.Groups["num"].Value, out numero);
+                concepto = mEspecial.Groups["concepto"].Value;
+            }
+
+            return new ArchivoNomina { NombreArchivo = nombreArchivo, EsNormal = false, Numero = numero, Concepto = concepto };
+        }
+
+        private bool EsFilaSeparador(object item) => string.Equals(item as string, SeparadorEspeciales, StringComparison.Ordinal);
+
+        private void listBoxArchivos_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!EsFilaSeparador(listBoxArchivos.SelectedItem)) return;
+
+            int idx = listBoxArchivos.SelectedIndex;
+            int siguiente = idx + 1;
+            if (siguiente < listBoxArchivos.Items.Count)
+                listBoxArchivos.SelectedIndex = siguiente;
+            else if (idx - 1 >= 0)
+                listBoxArchivos.SelectedIndex = idx - 1;
+        }
     }
 }

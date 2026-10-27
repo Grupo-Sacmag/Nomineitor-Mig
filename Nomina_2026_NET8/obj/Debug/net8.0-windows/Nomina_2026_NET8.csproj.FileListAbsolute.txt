@@ -320,6 +320,24 @@ C:\Users\desarrollo.conta\Desktop\GITHUB\C#\Backups\Nomina C# .NET8\Nomina_2026_
 C:\Users\desarrollo.conta\Desktop\GITHUB\C#\Backups\Nomina C# .NET8\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.pdb
 C:\Users\desarrollo.conta\Desktop\GITHUB\C#\Backups\Nomina C# .NET8\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.genruntimeconfig.cache
 C:\Users\desarrollo.conta\Desktop\GITHUB\C#\Backups\Nomina C# .NET8\Nomina_2026_NET8\obj\Debug\net8.0-windows\ref\Nomina_2026_NET8.dll
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.csproj.AssemblyReference.cache
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormAcumulados.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormCaptura.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormEDICIONCENTRALPERSONAL.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormEmpresaUnificado.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormImpuestosTablas.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormNOMCFDIPlantillas.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormPassword.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormPrincipal.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormTraspasoNomBanamex.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormVersion.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.Properties.Resources.resources
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.csproj.GenerateResource.cache
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.AssemblyInfoInputs.cache
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.AssemblyInfo.cs
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.csproj.CoreCompileInputs.cache
+C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.sourcelink.json
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\bin\Debug\net8.0-windows\Nomina_2026_NET8.exe
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\bin\Debug\net8.0-windows\Nomina_2026_NET8.dll.config
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\bin\Debug\net8.0-windows\Nomina_2026_NET8.deps.json
@@ -404,28 +422,9 @@ C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NE
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\bin\Debug\net8.0-windows\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.csproj.AssemblyReference.cache
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormAcumulados.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormCaptura.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormEDICIONCENTRALPERSONAL.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormEmpresaUnificado.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormImpuestosTablas.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormNOMCFDIPlantillas.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormPassword.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormPrincipal.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormTraspasoNomBanamex.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\NOMINA_2025.FormVersion.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.Properties.Resources.resources
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.csproj.GenerateResource.cache
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.AssemblyInfoInputs.cache
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.AssemblyInfo.cs
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.csproj.CoreCompileInputs.cache
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.sourcelink.json
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2.B15D9126.Up2Date
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.dll
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\refint\Nomina_2026_NET8.dll
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.pdb
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.genruntimeconfig.cache
 C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\ref\Nomina_2026_NET8.dll
-C:\Users\desarrollo.conta\Desktop\GITHUB\SACMAG\C#\Nomineitor-Mig\Nomina_2026_NET8\obj\Debug\net8.0-windows\Nomina_2026_NET8.FormPersonalVistaClasica.resources

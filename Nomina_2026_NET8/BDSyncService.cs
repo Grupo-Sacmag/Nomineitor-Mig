@@ -12,8 +12,11 @@ namespace Nomina_2026_NET8
         public int Nuevos { get; set; }
         public int Actualizados { get; set; }
         public int SinCambios { get; set; }
+        public List<string> Discrepancias { get; set; } = new();
         public bool HuboCambios => Nuevos > 0 || Actualizados > 0;
-        public string Resumen => $"Nuevos: {Nuevos}  |  Actualizados: {Actualizados}  |  Sin cambios: {SinCambios}";
+
+        public bool TieneDiscrepancias => Discrepancias.Count > 0;
+        public string Resumen => $"Nuevos: {Nuevos} | Actualizados: {Actualizados} | Sin cambios: {SinCambios}";
     }
 
     public static class BDSyncService
@@ -98,13 +101,7 @@ namespace Nomina_2026_NET8
             DataTable dt = ConsultarBD(root.clave_empresa);
             if (dt.Rows.Count == 0) return new SyncResult();
 
-            var result = AplicarCambios(root, dt);
-
-            if (result.HuboCambios)
-            {
-                root.personal = root.personal.OrderBy(p => p.idEmpleado).ToList();
-                CryptoService.SaveEncrypted(rutaRUEP, root, true);
-            }
+            var result = SincronizarPorRFC(root, dt, rutaRUEP);            
 
             return result;
         }
@@ -227,93 +224,121 @@ namespace Nomina_2026_NET8
             return dt;
         }
 
-        private static SyncResult AplicarCambios(RuepRoot root, DataTable dt)
-        {
-            var result = new SyncResult();
-            string ahora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-
-            var dictBD = dt.AsEnumerable().GroupBy(r => Convert.ToInt32(r["idNomina"])).ToDictionary(g => g.Key, g => g.First());
-
-            var idsRuep = new HashSet<int>(root.personal.Select(p => p.idEmpleado));
-
-            foreach (var emp in root.personal)
-            {
-                if (!dictBD.TryGetValue(emp.idEmpleado, out DataRow fila)) continue;
-                if (ActualizarCampos(emp, fila, ahora)) result.Actualizados++;
-                else result.SinCambios++;
-            }
-
-            foreach (var kvp in dictBD)
-            {
-                if (idsRuep.Contains(kvp.Key)) continue;
-                root.personal.Add(CrearDesdeDB(kvp.Key, kvp.Value, ahora));
-                result.Nuevos++;
-            }
-
-            return result;
-        }
-
-        private static bool ActualizarCampos(
-            RuepEmpleado emp, DataRow fila, string ahora)
+        private static bool ActualizarCampos(RuepEmpleado emp, DataRow fila, string ahora, SyncResult result)
         {
             string BD(string col) => fila.Table.Columns.Contains(col) && fila[col] != DBNull.Value ? fila[col].ToString().Trim().Replace("N/A", "").Trim() : "";
 
             emp.cfdi ??= new RuepCFDI();
             emp.datos_personales ??= new RuepDatosPersonales();
 
+            string nombreEmpleado = $"{emp.apellido_paterno} {emp.apellido_materno} {emp.nombre}";
             string snap = SnapShot(emp);
 
-            emp.rfc = Take(BD("rfc"), emp.rfc);
-            emp.nombre = Take(BD("nombre"), emp.nombre);
-            emp.apellido_paterno = Take(BD("apellidoP"), emp.apellido_paterno);
-            emp.apellido_materno = Take(BD("apellidoM"), emp.apellido_materno);
+            // ─────────────────────────────────────────────
+            // DATOS DE IDENTIDAD
+            // ─────────────────────────────────────────────
+
+            emp.rfc = ResolverCampo(emp.rfc, BD("rfc"), result.Discrepancias, nombreEmpleado, "RFC");
+            emp.nombre = ResolverCampo(emp.nombre, BD("nombre"), result.Discrepancias, nombreEmpleado, "Nombre");
+            emp.apellido_paterno = ResolverCampo(emp.apellido_paterno, BD("apellidoP"), result.Discrepancias, nombreEmpleado, "Apellido Paterno");
+            emp.apellido_materno = ResolverCampo(emp.apellido_materno, BD("apellidoM"), result.Discrepancias, nombreEmpleado, "Apellido Materno");
+            string curpBD = BD("curp");
+
+            if (!string.IsNullOrWhiteSpace(curpBD))
+            {
+                string curpRuep = emp.cfdi.curp ?? "";
+
+                if (curpRuep.Length < curpBD.Length && curpBD.StartsWith(curpRuep, StringComparison.OrdinalIgnoreCase))
+                {
+                    emp.cfdi.curp = curpBD;
+                }
+                else
+                {
+                    emp.cfdi.curp = ResolverCampo(emp.cfdi.curp, curpBD, result.Discrepancias, nombreEmpleado, "CURP");
+                }
+            }
+
+            // ─────────────────────────────────────────────
+            // FECHA ALTA
+            // ─────────────────────────────────────────────
 
             string fechaStr = "";
-            if (fila.Table.Columns.Contains("falta") && fila["falta"] != DBNull.Value && DateTime.TryParse(fila["falta"].ToString(), out DateTime fechaBD))
-                fechaStr = fechaBD.ToString("dd/MM/yyyy");
 
-            emp.fecha_alta = Take(fechaStr, emp.fecha_alta);
-            emp.cfdi.curp = Take(BD("curp"), emp.cfdi.curp);
+            if (fila.Table.Columns.Contains("falta") && fila["falta"] != DBNull.Value && DateTime.TryParse(fila["falta"].ToString(), out DateTime fechaBD))
+            {
+                fechaStr = fechaBD.ToString("dd/MM/yyyy");
+            }
+
+            emp.fecha_alta = ResolverCampo(emp.fecha_alta, fechaStr, result.Discrepancias, nombreEmpleado, "Fecha Alta");
+
+            // ─────────────────────────────────────────────
+            // DOMICILIO
+            // ─────────────────────────────────────────────
 
             string tipoBD = BD("tipoVialidad");
             string nvialBD = BD("nombreDeVialidad");
             string dirBD = string.Join(" ", new[] { tipoBD, nvialBD }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
-            emp.cfdi.direccion = Take(dirBD, emp.cfdi.direccion);
-            emp.cfdi.no_exterior = Take(BD("numeroExterior"), emp.cfdi.no_exterior);
-            emp.cfdi.no_interior = Take(BD("numeroInterior"), emp.cfdi.no_interior);
-            emp.cfdi.colonia = Take(BD("nombreColonia"), emp.cfdi.colonia);
-            emp.cfdi.estado = Take(BD("entidadFederativa"), emp.cfdi.estado);
-            emp.cfdi.delegacion = Take(BD("nombreMunicipio"), emp.cfdi.delegacion);
-            emp.cfdi.cp = Take(BD("cp"), emp.cfdi.cp);
-            emp.cfdi.link_sat = Take(BD("link"), emp.cfdi.link_sat);
-
-            string correo = BD("correoElectronico");
-            if (!string.IsNullOrWhiteSpace(correo))
-            {
-                if (correo.Contains("@grupo-sacmag.com.mx", StringComparison.OrdinalIgnoreCase))
-                    emp.cfdi.correo_empresarial = correo;
-                else
-                    emp.cfdi.correo_personal = correo;
-            }
-
-            emp.datos_personales.lada = Take(BD("ladaTel"), emp.datos_personales.lada);
-            emp.datos_personales.telefono_movil = Take(BD("numeroTel"), emp.datos_personales.telefono_movil);
-            emp.datos_personales.actividad_economica = Take(BD("actividadEconomica"), emp.datos_personales.actividad_economica);
-            emp.datos_personales.regimen_fiscal = Take(BD("regimen"), emp.datos_personales.regimen_fiscal);
-            emp.cfdi.estado_domicilio = Take(BD("estadoDomicilio"), emp.cfdi.estado_domicilio);
-            emp.cfdi.estado_cont_domicilio = Take(BD("estadoContDomicilio"), emp.cfdi.estado_cont_domicilio);
+            emp.cfdi.direccion = ResolverCampo(emp.cfdi.direccion, dirBD, result.Discrepancias, nombreEmpleado, "Dirección");
+            emp.cfdi.no_exterior = ResolverCampo(emp.cfdi.no_exterior, BD("numeroExterior"), result.Discrepancias, nombreEmpleado, "Número Exterior");
+            emp.cfdi.no_interior = ResolverCampo(emp.cfdi.no_interior, BD("numeroInterior"), result.Discrepancias, nombreEmpleado, "Número Interior");
+            emp.cfdi.colonia = ResolverCampo(emp.cfdi.colonia, BD("nombreColonia"), result.Discrepancias, nombreEmpleado, "Colonia");
+            emp.cfdi.estado = ResolverCampo(emp.cfdi.estado, BD("entidadFederativa"), result.Discrepancias, nombreEmpleado, "Estado");
+            emp.cfdi.delegacion = ResolverCampo(emp.cfdi.delegacion, BD("nombreMunicipio"), result.Discrepancias, nombreEmpleado, "Municipio");
+            emp.cfdi.cp = ResolverCampo(emp.cfdi.cp, BD("cp"), result.Discrepancias, nombreEmpleado, "Código Postal");
 
             string entre = BD("entreCalle");
             string yc = BD("yCalle");
-            if (!string.IsNullOrWhiteSpace(entre) || !string.IsNullOrWhiteSpace(yc)) emp.cfdi.referencias = Take(string.Join(" / ", new[] { entre, yc }.Where(s => !string.IsNullOrWhiteSpace(s))), emp.cfdi.referencias);
+            string referenciasBD = string.Join(" / ", new[] { entre, yc }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+            if (!string.IsNullOrWhiteSpace(referenciasBD))
+            {
+                emp.cfdi.referencias = ResolverCampo(emp.cfdi.referencias, referenciasBD, result.Discrepancias, nombreEmpleado, "Referencias");
+            }
+            emp.cfdi.estado_domicilio = ResolverCampo(emp.cfdi.estado_domicilio, BD("estadoDomicilio"), result.Discrepancias, nombreEmpleado, "Estado Domicilio");
+            emp.cfdi.estado_cont_domicilio = ResolverCampo(emp.cfdi.estado_cont_domicilio, BD("estadoContDomicilio"), result.Discrepancias, nombreEmpleado, "Estado Contribuyente");
+
+            // ─────────────────────────────────────────────
+            // CONTACTO
+            // ─────────────────────────────────────────────
+
+            string correo = BD("correoElectronico");
+
+            if (!string.IsNullOrWhiteSpace(correo))
+            {
+                if (correo.Contains("@grupo-sacmag.com.mx", StringComparison.OrdinalIgnoreCase))
+                {
+                    emp.cfdi.correo_empresarial = ResolverCampo(emp.cfdi.correo_empresarial, correo, result.Discrepancias, nombreEmpleado, "Correo Empresarial");
+                }
+                else
+                {
+                    emp.cfdi.correo_personal = ResolverCampo(emp.cfdi.correo_personal, correo, result.Discrepancias, nombreEmpleado, "Correo Personal");
+                }
+            }
+
+            emp.datos_personales.lada = ResolverCampo(emp.datos_personales.lada, BD("ladaTel"), result.Discrepancias, nombreEmpleado, "LADA");
+            emp.datos_personales.telefono_movil = ResolverCampo(emp.datos_personales.telefono_movil, BD("numeroTel"), result.Discrepancias, nombreEmpleado, "Teléfono");
+
+            // ─────────────────────────────────────────────
+            // SAT / FISCALES
+            // ─────────────────────────────────────────────
+
+            emp.datos_personales.actividad_economica = ResolverCampo(emp.datos_personales.actividad_economica, BD("actividadEconomica"), result.Discrepancias, nombreEmpleado, "Actividad Económica");
+            emp.datos_personales.regimen_fiscal = ResolverCampo(emp.datos_personales.regimen_fiscal, BD("regimen"), result.Discrepancias, nombreEmpleado, "Régimen Fiscal");
+            emp.cfdi.link_sat = ResolverCampo(emp.cfdi.link_sat, BD("link"), result.Discrepancias, nombreEmpleado, "Link SAT");
+
+            // ─────────────────────────────────────────────
+            // DETECCIÓN DE CAMBIOS
+            // ─────────────────────────────────────────────
 
             bool cambio = SnapShot(emp) != snap;
+
             if (cambio)
             {
                 emp.fecha_ultima_mod = ahora;
                 emp.modificado_por = "Sincronización BD";
             }
+
             return cambio;
         }
 
@@ -327,7 +352,7 @@ namespace Nomina_2026_NET8
             string dirBD = string.Join(" ", new[] { tipoBD, nvialBD }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
             string fechaAltaBD = "";
-            if (fila.Table.Columns.Contains("falta") && fila["falta"] != DBNull.Value && DateTime.TryParse(fila["falta"].ToString(), out DateTime fechaBD)) 
+            if (fila.Table.Columns.Contains("falta") && fila["falta"] != DBNull.Value && DateTime.TryParse(fila["falta"].ToString(), out DateTime fechaBD))
                 fechaAltaBD = fechaBD.ToString("dd/MM/yyyy");
 
             bool esEmpresarial = correo.Contains("@grupo-sacmag.com.mx", StringComparison.OrdinalIgnoreCase);
@@ -373,30 +398,55 @@ namespace Nomina_2026_NET8
             };
         }
 
-        private static SyncResult SincronizarPorRFC(RuepRoot root, string rutaRUEP)
+        private static string CrearKey(string rfc, string curp)
         {
-            DataTable dt = ConsultarBD(root.clave_empresa);
-            if (dt.Rows.Count == 0) return new SyncResult();
+            return
+                $"{rfc?.Trim().ToUpperInvariant()}|" + $"{curp?.Trim().ToUpperInvariant()}";
+        }
 
+        private static SyncResult SincronizarPorRFC(RuepRoot root, DataTable dt, string rutaRUEP)
+        {            
             var result = new SyncResult();
             string ahora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
-            var dictBD = dt.AsEnumerable().Where(r => r["rfc"] != DBNull.Value && !string.IsNullOrWhiteSpace(r["rfc"].ToString())).GroupBy(r => r["rfc"].ToString().Trim().ToUpperInvariant()).ToDictionary(g => g.Key, g => g.First());
+            var dictBD = dt.AsEnumerable().GroupBy(r => CrearKey(r["rfc"]?.ToString(), r["curp"]?.ToString())).ToDictionary(g => g.Key, g => g.First());
 
             foreach (var emp in root.personal)
             {
-                string rfcKey = (emp.rfc ?? "").Trim().ToUpperInvariant();
-                if (string.IsNullOrWhiteSpace(rfcKey) || !dictBD.TryGetValue(rfcKey, out DataRow fila))
+                DataRow fila = dt.AsEnumerable().FirstOrDefault(r => string.Equals((r["rfc"]?.ToString() ?? "").Trim(), (emp.rfc ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
+
+                if (fila == null)
                 {
                     result.SinCambios++;
                     continue;
                 }
 
-                if (ActualizarCampos(emp, fila, ahora)) result.Actualizados++;
-                else result.SinCambios++;
+                if (ActualizarCampos(emp, fila, ahora, result))
+                    result.Actualizados++;
+                else 
+                    result.SinCambios++;
+            }
+
+            var keysRuep = new HashSet<string>(root.personal.Select(e => CrearKey(e.rfc, e.cfdi?.curp)));
+
+            foreach (var item in dictBD)
+            {
+                if (keysRuep.Contains(item.Key))
+                    continue;
+
+                int idNomina = Convert.ToInt32(item.Value["idNomina"]);
+                root.personal.Add(CrearDesdeDB(idNomina, item.Value, ahora));
+                result.Nuevos++;
             }
 
             if (result.HuboCambios)
+            {
+                root.personal = root.personal.OrderBy(p => p.idEmpleado).ToList();
+
+                CryptoService.SaveEncrypted(rutaRUEP, root, true);
+            }
+
+            if (result.Nuevos > 0 || result.Actualizados > 0)
             {
                 root.personal = root.personal.OrderBy(p => p.idEmpleado).ToList();
                 CryptoService.SaveEncrypted(rutaRUEP, root, true);
@@ -405,11 +455,29 @@ namespace Nomina_2026_NET8
             return result;
         }
 
-        // ── Utilidades ────────────────────────────────────────────────────
-        private static string Take(string bdVal, string ruepVal) => string.IsNullOrWhiteSpace(bdVal) ? (ruepVal ?? "") : bdVal;
+        private static string ResolverCampo(string ruepVal, string bdVal, List<string> discrepancias, string empleado, string campo)
+        {
+            ruepVal = (ruepVal ?? "").Trim();
+            bdVal = (bdVal ?? "").Trim();
 
-        private static string SnapShot(RuepEmpleado e) => string.Concat(e.rfc, e.nombre, e.apellido_paterno, e.apellido_materno, e.fecha_alta, e.cfdi?.curp, 
-            e.cfdi?.direccion, e.cfdi?.no_exterior, e.cfdi?.colonia, e.cfdi?.estado, e.cfdi?.delegacion,  e.cfdi?.cp, e.cfdi?.estado_domicilio, e.cfdi?.estado_cont_domicilio, 
+            if (string.IsNullOrWhiteSpace(ruepVal))
+                return bdVal;
+
+            if (string.IsNullOrWhiteSpace(bdVal))
+                return ruepVal;
+
+            if (!string.Equals(ruepVal, bdVal, StringComparison.OrdinalIgnoreCase))
+            {
+                discrepancias.Add($"{empleado} | {campo}" + Environment.NewLine + $"RUEP: {ruepVal}" + Environment.NewLine + $"BD: {bdVal}");
+            }
+
+            return ruepVal;
+        }
+
+
+        // ── Utilidades ────────────────────────────────────────────────────
+        private static string SnapShot(RuepEmpleado e) => string.Concat(e.rfc, e.nombre, e.apellido_paterno, e.apellido_materno, e.fecha_alta, e.cfdi?.curp,
+            e.cfdi?.direccion, e.cfdi?.no_exterior, e.cfdi?.colonia, e.cfdi?.estado, e.cfdi?.delegacion, e.cfdi?.cp, e.cfdi?.estado_domicilio, e.cfdi?.estado_cont_domicilio,
             e.cfdi?.referencias, e.cfdi?.correo_empresarial, e.cfdi?.correo_personal, e.cfdi?.link_sat, e.datos_personales?.lada, e.datos_personales?.telefono_movil,
             e.datos_personales?.actividad_economica, e.datos_personales?.regimen_fiscal);
     }

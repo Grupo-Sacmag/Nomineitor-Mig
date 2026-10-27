@@ -964,9 +964,8 @@ namespace Nomina_2026_NET8
 
             // Respaldo automático
             string fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
-            string nomLimpio = Regex.Replace(nombreEmp, @"[^\w\s]", "")
-                                   .Replace(" ", "_");
-            BackupService.GuardarAcumuladoHTML(html, $"Acumulado_{nomLimpio}_{fecha}.html");
+            string nomLimpio = Regex.Replace(nombreEmp, @"[^\w\s]", "").Replace(" ", "_");
+            BackupService.GuardarAcumuladoHTML(html, $"Acumulado_{nomLimpio}_{fecha}.html", FormPrincipal.EmpresaNombre, DateTime.Now.Year);
 
             // Segunda llamada a Process.Start eliminada — era duplicado exacto
             Process.Start(new ProcessStartInfo(tmp) { UseShellExecute = true });

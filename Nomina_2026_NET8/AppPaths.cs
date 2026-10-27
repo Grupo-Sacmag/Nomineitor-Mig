@@ -1,17 +1,16 @@
-﻿// AppPaths.cs — VERSION LIMPIA
-using System;
+﻿using System;
 using System.IO;
 
 namespace Nomina_2026_NET8
 {
     public static class AppPaths
     {
-        // ── Rutas fijas ───────────────────────────────────────────────
-        public static readonly string Raiz = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NominaEmpresarial2026");
+        // ── Raíz ──────────────────────────────────────────────────────
+        public static readonly string Raiz = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NominaEmpresarial_ENHACED");
 
-        public static readonly string BackupNominas = Path.Combine(Raiz, "BackUp Nóminas");
-        public static readonly string Tarifas = Path.Combine(Raiz, "Tarifas");
-        public static readonly string AcumuladosBackUp = Path.Combine(Raiz, "AcumuladosBackUp");
+        // ── Tarifas — compartida para todo el programa, NO por empresa ──
+        public static readonly string Tarifas = Path.Combine(Raiz, "TARIFAS");
 
         // ── Año fiscal activo ─────────────────────────────────────────
         public static int AnoFiscalActivo
@@ -23,7 +22,7 @@ namespace Nomina_2026_NET8
             }
         }
 
-        // ── Tarifas dinámicas ─────────────────────────────────────────
+        // ── Tabla de tarifa vigente (compartida, sin depender de empresa) ─
         public static string RutaTablasTarifa
         {
             get
@@ -33,13 +32,18 @@ namespace Nomina_2026_NET8
             }
         }
 
-        // Usada por TablasGenerator para leer binarios VB6
+        // ── Carpetas por empresa + año ───────────────────────────────────
+        public static string CarpetaEmpresa(string nombreCarpetaEmpresa) => Path.Combine(Raiz, nombreCarpetaEmpresa);
+        public static string CarpetaEmpresaAnio(string nombreCarpetaEmpresa, int anio) => Path.Combine(CarpetaEmpresa(nombreCarpetaEmpresa), anio.ToString());
+        public static string BackupNominas(string nombreCarpetaEmpresa, int anio) => Path.Combine(CarpetaEmpresaAnio(nombreCarpetaEmpresa, anio), "BackUp Nóminas");
+        public static string AcumuladosBackUp(string nombreCarpetaEmpresa, int anio) => Path.Combine(CarpetaEmpresaAnio(nombreCarpetaEmpresa, anio), "AcumuladosBackup");
+        public static string Bitacora(string nombreCarpetaEmpresa, int anio) => Path.Combine(CarpetaEmpresaAnio(nombreCarpetaEmpresa, anio), "Bitacora.txt");
+
+        // Usada por TablasGenerator para leer binarios VB6 (sin cambios)
         public static string CarpetaVB6ParaAnio(int anio)
         {
             string sufijo = (anio % 100).ToString("D2");
             return $@"C:\TARIFA{sufijo}";
         }
-
-        // 🗑️ RutaTarifaParaAnio → ELIMINADA (nadie la llama)
     }
 }

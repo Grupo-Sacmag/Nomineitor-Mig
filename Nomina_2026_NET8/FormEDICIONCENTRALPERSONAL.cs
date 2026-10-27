@@ -261,19 +261,20 @@ namespace NOMINA_2025
                 }
             }
 
-            // ── Campos informativos (no bloquean) ─────────────────────────
+            // ── Campos informativos (no bloquean) ─────────────────────────────
             var faltantesInfo = esNuevo ? ObtenerCamposInformativos() : new List<string>();
+
             if (faltantesInfo.Count > 0)
             {
+                // Solamente se marcan visualmente.
+                // No se interrumpe la captura ni se solicita confirmación adicional.
                 MostrarAdvertenciasEnLabels(faltantesInfo);
-                var res = MessageBox.Show("Los siguientes datos están incompletos y podrán capturarse después:\n\n• " + string.Join("\n• ", faltantesInfo) +
-                    "\n\n¿Deseas continuar con el alta de todas formas?", "Datos incompletos", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
-
-                if (res == DialogResult.No) return;
             }
-            else
+
+            // Una sola confirmación final para guardar.
+            if (MessageBox.Show("¿Deseas guardar los cambios realizados?", "Confirmación", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
             {
-                if (MessageBox.Show("¿Deseas guardar los cambios realizados?", "Confirmación", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return;
+                return;
             }
 
             // ── Persistir cambios ──────────────────────────────────────────
@@ -688,10 +689,9 @@ namespace NOMINA_2025
             txtEstado.Text = emp.Estado ?? "";
             txtMunicipio.Text = emp.Municipio ?? "";
             txtColonia.Text = emp.Colonia ?? "";
+            txtDireccionCompleta.Text = emp.Direccion ?? "";
             txtCorreoElectronicoPersonal.Text = emp.Email ?? "";
             txtEmailEmpresa.Text = emp.EmailEmpresa ?? "";
-            txtEstadoDomicilio.Text = emp.EstadoDomicilio ?? "";
-            txtEstadoContDomicilio.Text = emp.EstadoContDomicilio ?? "";
             mskdBANAMEX.Text = emp.Banamex ?? "";
             txtReferencias.Text = emp.Referencias ?? "";
             mskdtxtNoExterior.Text = emp.NoExterior ?? "";
@@ -821,12 +821,11 @@ namespace NOMINA_2025
             emp.Estado = txtEstado.Text.Trim();
             emp.Municipio = txtMunicipio.Text.Trim();
             emp.Colonia = txtColonia.Text.Trim();
+            emp.Direccion = txtDireccionCompleta.Text.Trim();
             emp.Email = txtCorreoElectronicoPersonal.Text.Trim();
             emp.Referencias = txtReferencias.Text.Trim();
             emp.NoExterior = mskdtxtNoExterior.Text.Trim();
             emp.NoInterior = mskdtxtNoInterior.Text.Trim();
-            emp.EstadoDomicilio = txtEstadoDomicilio.Text.Trim();
-            emp.EstadoContDomicilio = txtEstadoContDomicilio.Text.Trim();
             emp.TelefonoFijo = mskdTelFijo.Text.Trim();
             emp.TelefonoMovil = mskdTelMovil.Text.Trim();
             emp.LADA = mskdtxtLADATel.Text.Trim();
@@ -1147,8 +1146,6 @@ namespace NOMINA_2025
             txtEstado.ReadOnly = soloLectura;
             txtMunicipio.ReadOnly = soloLectura;
             txtColonia.ReadOnly = soloLectura;
-            txtEstadoDomicilio.ReadOnly = soloLectura;
-            txtEstadoContDomicilio.ReadOnly = soloLectura;
             txtCorreoElectronicoPersonal.ReadOnly = soloLectura;
             mskdTelFijo.ReadOnly = soloLectura;
             mskdTelMovil.ReadOnly = soloLectura;
@@ -1260,8 +1257,13 @@ namespace NOMINA_2025
         private bool ValidarFormulario()
         {
             var errores = new StringBuilder();
+            var camposError = new List<string>();
 
-            bool Cambio(Control c) => !string.Equals(_originalValues.ContainsKey(c) ? (_originalValues[c] ?? "") : "", (c.Text ?? "").Trim(), StringComparison.Ordinal);
+            bool Cambio(Control c) =>
+                !string.Equals(
+                    _originalValues.ContainsKey(c) ? (_originalValues[c] ?? "") : "",
+                    (c.Text ?? "").Trim(),
+                    StringComparison.Ordinal);
 
             string rfc = GetControlValue(mskdRFC).ToUpper();
             string curp = GetControlValue(mskdCURP).ToUpper();
@@ -1272,65 +1274,169 @@ namespace NOMINA_2025
             string emailP = txtCorreoElectronicoPersonal.Text.Trim();
             string emailE = txtEmailEmpresa.Text.Trim();
 
+            // ─────────────────────────────────────────────
+            // RFC
+            // ─────────────────────────────────────────────
             if (Cambio(mskdRFC) && !EsVacioOGuion(rfc) && !ValidarRFC(rfc))
+            {
                 errores.AppendLine("• RFC inválido o incompleto.");
+                camposError.Add("RFC");
+            }
 
+            // ─────────────────────────────────────────────
+            // CURP
+            // ─────────────────────────────────────────────
             if (Cambio(mskdCURP) && !EsVacioOGuion(curp) && !ValidarCURP(curp))
+            {
                 errores.AppendLine("• CURP inválida o incompleta.");
+                camposError.Add("CURP");
+            }
 
+            // ─────────────────────────────────────────────
+            // NSS
+            // ─────────────────────────────────────────────
             if (Cambio(mskdNSS) && !EsVacioOGuion(nss) && nss.Length < 11)
+            {
                 errores.AppendLine("• NSS incompleto (requiere 11 dígitos).");
+                camposError.Add("NSS");
+            }
 
-            if (Cambio(mskdTelMovil) && !EsVacioOGuion(telMov) &&
+            // ─────────────────────────────────────────────
+            // TELÉFONO MÓVIL
+            // ─────────────────────────────────────────────
+            if (Cambio(mskdTelMovil) &&
+                !EsVacioOGuion(telMov) &&
                 !ValidarTelefono(telMov))
+            {
                 errores.AppendLine("• Teléfono móvil incompleto (requiere 10 dígitos).");
+                camposError.Add("Teléfono móvil personal");
+            }
 
-            if (Cambio(mskdTelFijo) && !EsVacioOGuion(telFij) &&
+            // ─────────────────────────────────────────────
+            // TELÉFONO FIJO
+            // ─────────────────────────────────────────────
+            if (Cambio(mskdTelFijo) &&
+                !EsVacioOGuion(telFij) &&
                 !ValidarTelefono(telFij))
+            {
                 errores.AppendLine("• Teléfono fijo incompleto (requiere 10 dígitos).");
+                camposError.Add("Teléfono fijo personal");
+            }
 
-            if (Cambio(mskdBANAMEX) && !EsVacioOGuion(clabe) &&
+            // ─────────────────────────────────────────────
+            // TARJETA BANAMEX
+            // ─────────────────────────────────────────────
+            if (Cambio(mskdBANAMEX) &&
+                !EsVacioOGuion(clabe) &&
                 !ValidarNumTarjeta(clabe))
+            {
                 errores.AppendLine("• Tarjeta Banamex incompleta (requiere 16 dígitos).");
+                camposError.Add("Banamex");
+            }
 
-            if (Cambio(txtCorreoElectronicoPersonal) && !EsVacioOGuion(emailP) &&
+            // ─────────────────────────────────────────────
+            // CORREO PERSONAL
+            // ─────────────────────────────────────────────
+            if (Cambio(txtCorreoElectronicoPersonal) &&
+                !EsVacioOGuion(emailP) &&
                 !ValidarEmail(emailP))
+            {
                 errores.AppendLine("• Correo personal con formato inválido.");
+                camposError.Add("Email personal");
+            }
 
-            if (Cambio(txtEmailEmpresa) && !EsVacioOGuion(emailE) &&
+            // ─────────────────────────────────────────────
+            // CORREO EMPRESA
+            // ─────────────────────────────────────────────
+            if (Cambio(txtEmailEmpresa) &&
+                !EsVacioOGuion(emailE) &&
                 !ValidarEmail(emailE))
+            {
                 errores.AppendLine("• Correo empresa con formato inválido.");
+                camposError.Add("Email empresa");
+            }
 
-            if (Cambio(txtIngresoDiarioNormal) && !EsVacioOGuion(txtIngresoDiarioNormal.Text) && !TryParseCurrencyVB6(txtIngresoDiarioNormal.Text, out _))
+            // ─────────────────────────────────────────────
+            // INGRESO DIARIO NORMAL
+            // ─────────────────────────────────────────────
+            if (Cambio(txtIngresoDiarioNormal) &&
+                !EsVacioOGuion(txtIngresoDiarioNormal.Text) &&
+                !TryParseCurrencyVB6(txtIngresoDiarioNormal.Text, out _))
             {
                 errores.AppendLine("• Ingreso diario normal inválido.");
+                camposError.Add("Ingreso diario normal");
             }
 
-            if (Cambio(txtViaticosDiarios) && !EsVacioOGuion(txtViaticosDiarios.Text) && !TryParseCurrencyVB6(txtViaticosDiarios.Text, out _))
+            // ─────────────────────────────────────────────
+            // VIÁTICOS
+            // ─────────────────────────────────────────────
+            if (Cambio(txtViaticosDiarios) &&
+                !EsVacioOGuion(txtViaticosDiarios.Text) &&
+                !TryParseCurrencyVB6(txtViaticosDiarios.Text, out _))
             {
                 errores.AppendLine("• Viáticos diarios inválidos.");
+                camposError.Add("Viáticos diarios");
             }
 
-            if (Cambio(txtOtrosDiarios) && !EsVacioOGuion(txtOtrosDiarios.Text) && !TryParseCurrencyVB6(txtOtrosDiarios.Text, out _))
+            // ─────────────────────────────────────────────
+            // OTROS DIARIOS
+            // ─────────────────────────────────────────────
+            if (Cambio(txtOtrosDiarios) &&
+                !EsVacioOGuion(txtOtrosDiarios.Text) &&
+                !TryParseCurrencyVB6(txtOtrosDiarios.Text, out _))
             {
                 errores.AppendLine("• Otros diarios fijos inválidos.");
+                camposError.Add("Otros diarios fijos");
             }
 
-            if (Cambio(txtTelEmpr) && !EsVacioOGuion(txtTelEmpr.Text) && !Regex.IsMatch(txtTelEmpr.Text, @"^\d{10}$"))
+            // ─────────────────────────────────────────────
+            // TELÉFONO EMPRESA
+            // ─────────────────────────────────────────────
+            if (Cambio(txtTelEmpr) &&
+                !EsVacioOGuion(txtTelEmpr.Text) &&
+                !Regex.IsMatch(txtTelEmpr.Text, @"^\d{10}$"))
+            {
                 errores.AppendLine("• Teléfono empresa inválido (10 dígitos).");
+                camposError.Add("Teléfono empresa");
+            }
 
-            if (!string.IsNullOrWhiteSpace(txtExt.Text) && !Regex.IsMatch(txtExt.Text, @"^\d{1,5}$"))
+            // ─────────────────────────────────────────────
+            // EXTENSIÓN
+            // ─────────────────────────────────────────────
+            if (!string.IsNullOrWhiteSpace(txtExt.Text) &&
+                !Regex.IsMatch(txtExt.Text, @"^\d{1,5}$"))
+            {
                 errores.AppendLine("• Extensión inválida (máximo 5 dígitos).");
+                camposError.Add("Extensión empresa");
+            }
 
-            // CP — validación con mensaje que antes estaba incompleta
-            if (Cambio(txtCP) && !EsVacioOGuion(txtCP.Text) && !Regex.IsMatch(txtCP.Text, @"^\d{5}$"))
+            // ─────────────────────────────────────────────
+            // CÓDIGO POSTAL
+            // ─────────────────────────────────────────────
+            if (Cambio(txtCP) &&
+                !EsVacioOGuion(txtCP.Text) &&
+                !Regex.IsMatch(txtCP.Text, @"^\d{5}$"))
+            {
                 errores.AppendLine("• Código Postal inválido (requiere 5 dígitos).");
+                camposError.Add("Código Postal");
+            }
 
+            // ─────────────────────────────────────────────
+            // RESULTADO
+            // ─────────────────────────────────────────────
             if (errores.Length > 0)
             {
-                MessageBox.Show(errores.ToString(), "Errores de validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MostrarErroresEnLabels(camposError);
+
+                MessageBox.Show(
+                    errores.ToString(),
+                    "Errores de validación",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
                 return false;
             }
+
             return true;
         }
 
@@ -1628,9 +1734,6 @@ namespace NOMINA_2025
             mskdtxtNoExterior.Text = "";
             mskdtxtNoInterior.Text = "";
 
-            txtEstadoDomicilio.Text = "";
-            txtEstadoContDomicilio.Text = "";
-
             // ── Contacto personal ─────────────────────────────────────────────
             txtCorreoElectronicoPersonal.Text = "";
             mskdTelFijo.Text = "";
@@ -1861,59 +1964,35 @@ namespace NOMINA_2025
 
         private void ValidarMaskedAlSalir(object sender, EventArgs e)
         {
+            // La validación ya no interrumpe la captura.
+            // Los errores se concentran al presionar Guardar.
             if (_estadoActual != EstadoUI.Edicion) return;
             if (!(sender is MaskedTextBox mb)) return;
 
             string valor = (mb.Text ?? "").Replace(" ", "").Replace("_", "").Trim();
-            if (string.IsNullOrWhiteSpace(valor)) return;
 
-            if (!mb.MaskCompleted)
-            {
-                string nombre = ObtenerNombreCampo(mb);
-                MessageBox.Show($"El campo \"{nombre}\" tiene datos incompletos.", "Campo incompleto", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                mb.Focus();
-            }
+            if (string.IsNullOrWhiteSpace(valor))
+                return;
+
+            // No mostrar MessageBox ni regresar el foco.
         }
 
         private void ValidarRFCAlSalir(object sender, EventArgs e)
         {
+            // La validación del RFC se realiza al guardar.
             if (_estadoActual != EstadoUI.Edicion) return;
-            string rfc = GetControlValue(mskdRFC).ToUpper();
-            if (string.IsNullOrWhiteSpace(rfc)) return;
-
-            if (!ValidarRFC(rfc))
-            {
-                MessageBox.Show("RFC incompleto o con formato incorrecto.\nFormato esperado: 4 letras · 6 dígitos · 3 alfanuméricos", "RFC inválido",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                mskdRFC.Focus();
-            }
         }
 
         private void ValidarCURPAlSalir(object sender, EventArgs e)
         {
+            // La validación de la CURP se realiza al guardar.
             if (_estadoActual != EstadoUI.Edicion) return;
-            string curp = GetControlValue(mskdCURP).ToUpper();
-            if (string.IsNullOrWhiteSpace(curp)) return;
-
-            if (!ValidarCURP(curp))
-            {
-                MessageBox.Show("CURP incompleta o con formato incorrecto (18 caracteres).", "CURP inválida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                mskdCURP.Focus();
-            }
         }
 
         private void ValidarEmailAlSalir(object sender, EventArgs e)
         {
+            // La validación del correo se realiza al guardar.
             if (_estadoActual != EstadoUI.Edicion) return;
-            if (!(sender is System.Windows.Forms.TextBox tb)) return;
-            string email = tb.Text.Trim();
-            if (string.IsNullOrWhiteSpace(email)) return;
-
-            if (!ValidarEmail(email))
-            {
-                MessageBox.Show("El correo electrónico no tiene un formato válido.", "Email inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                tb.Focus();
-            }
         }
 
         private string ObtenerNombreCampo(Control ctrl)
@@ -2323,6 +2402,11 @@ namespace NOMINA_2025
             frm.CancelButton = btnCancelar;
 
             return frm.ShowDialog(this) == DialogResult.OK ? dtp.Value.Date : null;
+        }
+
+        private void txtEstado_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

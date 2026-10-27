@@ -9,6 +9,8 @@ namespace Nomina_2026_NET8
         public int idEmpresa { get; set; }
         public string nombre { get; set; }
         public string clave_empresa { get; set; }
+
+        [JsonProperty("anio_fiscal")]
         public int ano_fiscal { get; set; }
         public decimal salario_minimo { get; set; }
         public decimal uma_por_dia { get; set; }
@@ -27,21 +29,35 @@ namespace Nomina_2026_NET8
     {
         [JsonProperty("rfc_empresa")]
         public string rfc { get; set; }
+
+        [JsonProperty("registro_patronal_empresa")]
         public string registro_patronal { get; set; }
+
+        [JsonProperty("direccion_empresa")]
         public string direccion { get; set; }
+
         public string lugar_expedicion { get; set; }
+
         public string regimen_fiscal { get; set; }
+
+        [JsonProperty("representante_legal_empresa")]
         public RepresentanteLegal representante_legal { get; set; }
+
         public BanamexEmpresa banamex { get; set; }
     }
 
     public class RepresentanteLegal
     {
         public string apellido_paterno { get; set; }
+
         public string apellido_materno { get; set; }
+
         public string nombre { get; set; }
-        [JsonProperty("rfc_representante")]
+
+        [JsonProperty("rfc_representante_legal")]
         public string rfc { get; set; }
+
+        [JsonProperty("curp_representante_legal")]
         public string curp { get; set; }
     }
 
@@ -73,6 +89,8 @@ namespace Nomina_2026_NET8
         public string apellido_paterno { get; set; }
         public string apellido_materno { get; set; }
         public string rfc { get; set; }
+        
+        [JsonProperty("nss_imss")]
         public string imss { get; set; }
 
         // ── Primer ciclo laboral ─────────────────────────────────────────
@@ -97,39 +115,53 @@ namespace Nomina_2026_NET8
         public RuepCFDI cfdi { get; set; }
         public RuepDatosPersonales datos_personales { get; set; }
 
-        /// <summary>
-        /// Salario diario integrado, PERSISTIDO (a diferencia del comportamiento previo
-        /// que lo recalculaba en cada carga). Nullable para retrocompatibilidad: un
-        /// RUEP.dat generado antes de este cambio no trae el campo y deserializa a null;
-        /// RuepService lo calcula una sola vez en ese caso y lo guarda de inmediato.
-        /// </summary>
-        public decimal? salario_integrado { get; set; }
+        [JsonIgnore]
+        public decimal? salario_integrado
+        {
+            get => ingresos?.integrado;
+
+            set
+            {
+                ingresos ??= new RuepIngresos();
+                ingresos.integrado = value;
+            }
+        }
 
         /// <summary>Distribución por obra migrada desde maestro.dno. Solo informativo.</summary>
         public List<RuepObra> obras { get; set; } = new();
-
+        public List<RuepPeriodoLaboral> historial_laboral { get; set; } = new();
         public string fecha_ultima_mod { get; set; }
         public string modificado_por { get; set; }
     }
 
-    /// Ingresos base diarios del empleado.
-    /// ISR es valor runtime — NO se persiste. SalarioIntegrado SÍ se persiste
-    /// (ver RuepEmpleado.salario_integrado).
+    public class RuepPeriodoLaboral
+    {
+        public int idPeriodo { get; set; }
+
+        public string tipo_movimiento { get; set; }
+
+        public string fecha_alta { get; set; }
+
+        public string fecha_baja { get; set; }
+
+        public int? id_empresa_origen { get; set; }
+
+        public int? id_empleado_origen { get; set; }
+
+        public bool? respeta_antiguedad { get; set; }
+    }
+
     public class RuepIngresos
     {
         public decimal sueldo { get; set; }
         public decimal viaticos { get; set; }
         public decimal otras { get; set; }
+        public decimal? integrado { get; set; }
     }
 
     public class RuepCFDI
     {
         public string curp { get; set; }
-
-        // ── Dirección ─────────────────────────────────────────────────
-        // "direccion" = campo legado (todo en uno) — usado por RuepService
-        // "tipo_vialidad" + "nombre_vialidad" = campos BD remota (BDSyncService)
-        // BDSyncService combina ambos → direccion al sincronizar
         public string direccion { get; set; }
         public string tipo_vialidad { get; set; }
         public string nombre_vialidad { get; set; }
@@ -152,6 +184,7 @@ namespace Nomina_2026_NET8
 
     public class RuepDatosPersonales
     {
+        [JsonProperty("numero_tarjeta_banamex")]
         public string clabe_banamex { get; set; }
         public string telefono_fijo { get; set; }
         public string telefono_movil { get; set; }

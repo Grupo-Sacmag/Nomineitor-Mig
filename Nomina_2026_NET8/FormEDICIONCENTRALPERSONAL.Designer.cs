@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormEDICIONCENTRALPERSONAL));
             lblBuscar = new Label();
             dgvEditPersonal = new DataGridView();
@@ -108,13 +108,12 @@
             txtCorreoElectronicoPersonal = new TextBox();
             lblEmailPersonal = new Label();
             gbDatosDomiciliarios = new GroupBox();
+            label3 = new Label();
+            txtDireccionCompleta = new TextBox();
             lblDepartamento = new Label();
             txtDepartamento = new TextBox();
             lblCiudad = new Label();
             txtCiudad = new TextBox();
-            lblEstadoContDomicilio = new Label();
-            lblEstadoDomicilio = new Label();
-            txtEstadoDomicilio = new TextBox();
             txtColonia = new TextBox();
             txtMunicipio = new TextBox();
             txtEstado = new TextBox();
@@ -152,9 +151,7 @@
             dtpFechaBaja = new DateTimePicker();
             lblAntiguedad = new Label();
             lblAntiguedadDelEmpleado = new Label();
-            txtEstadoContDomicilio = new TextBox();
-            label3 = new Label();
-            txtDireccionCompleta = new TextBox();
+            label4 = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvEditPersonal).BeginInit();
             gbDatosPersonales.SuspendLayout();
             gbIngresos.SuspendLayout();
@@ -183,35 +180,35 @@
             dgvEditPersonal.AllowUserToDeleteRows = false;
             dgvEditPersonal.AllowUserToResizeColumns = false;
             dgvEditPersonal.AllowUserToResizeRows = false;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = SystemColors.Control;
-            dataGridViewCellStyle4.Font = new Font("Microsoft Sans Serif", 8.25F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
-            dgvEditPersonal.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Microsoft Sans Serif", 8.25F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvEditPersonal.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dgvEditPersonal.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvEditPersonal.Columns.AddRange(new DataGridViewColumn[] { IdArchivo, NumeroEmpleado, NombreEmpleado, RFCEmpleado, CURPEmpleado, IMSSEmpleado });
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = SystemColors.Window;
-            dataGridViewCellStyle5.Font = new Font("Microsoft Sans Serif", 8.25F);
-            dataGridViewCellStyle5.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.False;
-            dgvEditPersonal.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 8.25F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dgvEditPersonal.DefaultCellStyle = dataGridViewCellStyle2;
             dgvEditPersonal.Location = new Point(13, 63);
             dgvEditPersonal.Name = "dgvEditPersonal";
             dgvEditPersonal.ReadOnly = true;
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = SystemColors.Control;
-            dataGridViewCellStyle6.Font = new Font("Microsoft Sans Serif", 8.25F);
-            dataGridViewCellStyle6.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.True;
-            dgvEditPersonal.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Microsoft Sans Serif", 8.25F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dgvEditPersonal.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dgvEditPersonal.RowHeadersVisible = false;
             dgvEditPersonal.Size = new Size(819, 588);
             dgvEditPersonal.TabIndex = 5;
@@ -831,17 +828,17 @@
             // 
             // txtPuesto
             // 
-            txtPuesto.Location = new Point(427, 49);
+            txtPuesto.Location = new Point(564, 45);
             txtPuesto.Margin = new Padding(4, 3, 4, 3);
             txtPuesto.Name = "txtPuesto";
-            txtPuesto.Size = new Size(177, 21);
+            txtPuesto.Size = new Size(218, 21);
             txtPuesto.TabIndex = 57;
             // 
             // lblPuesto
             // 
             lblPuesto.AutoSize = true;
             lblPuesto.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblPuesto.Location = new Point(367, 50);
+            lblPuesto.Location = new Point(497, 46);
             lblPuesto.Margin = new Padding(4, 0, 4, 0);
             lblPuesto.Name = "lblPuesto";
             lblPuesto.Size = new Size(59, 18);
@@ -851,7 +848,7 @@
             // linklblSAT
             // 
             linklblSAT.AutoSize = true;
-            linklblSAT.Location = new Point(445, 26);
+            linklblSAT.Location = new Point(564, 20);
             linklblSAT.Name = "linklblSAT";
             linklblSAT.Size = new Size(67, 15);
             linklblSAT.TabIndex = 55;
@@ -862,7 +859,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            label2.Location = new Point(367, 24);
+            label2.Location = new Point(485, 20);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
             label2.Size = new Size(71, 18);
@@ -871,17 +868,17 @@
             // 
             // txtRegimen
             // 
-            txtRegimen.Location = new Point(158, 43);
+            txtRegimen.Location = new Point(241, 43);
             txtRegimen.Margin = new Padding(4, 3, 4, 3);
             txtRegimen.Name = "txtRegimen";
-            txtRegimen.Size = new Size(196, 21);
+            txtRegimen.Size = new Size(220, 21);
             txtRegimen.TabIndex = 1;
             // 
             // lblRegimen
             // 
             lblRegimen.AutoSize = true;
             lblRegimen.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblRegimen.Location = new Point(158, 18);
+            lblRegimen.Location = new Point(241, 18);
             lblRegimen.Margin = new Padding(4, 0, 4, 0);
             lblRegimen.Name = "lblRegimen";
             lblRegimen.Size = new Size(67, 18);
@@ -893,7 +890,7 @@
             txtActividadEcon.Location = new Point(7, 43);
             txtActividadEcon.Margin = new Padding(4, 3, 4, 3);
             txtActividadEcon.Name = "txtActividadEcon";
-            txtActividadEcon.Size = new Size(143, 21);
+            txtActividadEcon.Size = new Size(220, 21);
             txtActividadEcon.TabIndex = 0;
             // 
             // lblActividadEconomica
@@ -1023,16 +1020,13 @@
             // 
             // gbDatosDomiciliarios
             // 
+            gbDatosDomiciliarios.Controls.Add(label4);
             gbDatosDomiciliarios.Controls.Add(label3);
             gbDatosDomiciliarios.Controls.Add(txtDireccionCompleta);
             gbDatosDomiciliarios.Controls.Add(lblDepartamento);
             gbDatosDomiciliarios.Controls.Add(txtDepartamento);
             gbDatosDomiciliarios.Controls.Add(lblCiudad);
             gbDatosDomiciliarios.Controls.Add(txtCiudad);
-            gbDatosDomiciliarios.Controls.Add(lblEstadoContDomicilio);
-            gbDatosDomiciliarios.Controls.Add(txtEstadoContDomicilio);
-            gbDatosDomiciliarios.Controls.Add(lblEstadoDomicilio);
-            gbDatosDomiciliarios.Controls.Add(txtEstadoDomicilio);
             gbDatosDomiciliarios.Controls.Add(txtColonia);
             gbDatosDomiciliarios.Controls.Add(txtMunicipio);
             gbDatosDomiciliarios.Controls.Add(txtEstado);
@@ -1059,6 +1053,25 @@
             gbDatosDomiciliarios.TabStop = false;
             gbDatosDomiciliarios.Text = "Datos Domiciliarios";
             // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
+            label3.Location = new Point(5, 201);
+            label3.Margin = new Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new Size(139, 18);
+            label3.TabIndex = 70;
+            label3.Text = "Dirección Completa";
+            // 
+            // txtDireccionCompleta
+            // 
+            txtDireccionCompleta.Location = new Point(7, 225);
+            txtDireccionCompleta.Margin = new Padding(4, 3, 4, 3);
+            txtDireccionCompleta.Name = "txtDireccionCompleta";
+            txtDireccionCompleta.Size = new Size(775, 21);
+            txtDireccionCompleta.TabIndex = 69;
+            // 
             // lblDepartamento
             // 
             lblDepartamento.AutoSize = true;
@@ -1082,7 +1095,7 @@
             // 
             lblCiudad.AutoSize = true;
             lblCiudad.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblCiudad.Location = new Point(243, 63);
+            lblCiudad.Location = new Point(234, 64);
             lblCiudad.Margin = new Padding(4, 0, 4, 0);
             lblCiudad.Name = "lblCiudad";
             lblCiudad.Size = new Size(54, 18);
@@ -1091,79 +1104,50 @@
             // 
             // txtCiudad
             // 
-            txtCiudad.Location = new Point(243, 88);
+            txtCiudad.Location = new Point(234, 88);
             txtCiudad.Margin = new Padding(4, 3, 4, 3);
             txtCiudad.Name = "txtCiudad";
             txtCiudad.Size = new Size(176, 21);
             txtCiudad.TabIndex = 65;
             // 
-            // lblEstadoContDomicilio
-            // 
-            lblEstadoContDomicilio.AutoSize = true;
-            lblEstadoContDomicilio.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblEstadoContDomicilio.Location = new Point(202, 201);
-            lblEstadoContDomicilio.Margin = new Padding(4, 0, 4, 0);
-            lblEstadoContDomicilio.Name = "lblEstadoContDomicilio";
-            lblEstadoContDomicilio.Size = new Size(161, 18);
-            lblEstadoContDomicilio.TabIndex = 62;
-            lblEstadoContDomicilio.Text = "Estado Cont. Domicilio";
-            // 
-            // lblEstadoDomicilio
-            // 
-            lblEstadoDomicilio.AutoSize = true;
-            lblEstadoDomicilio.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblEstadoDomicilio.Location = new Point(6, 201);
-            lblEstadoDomicilio.Margin = new Padding(4, 0, 4, 0);
-            lblEstadoDomicilio.Name = "lblEstadoDomicilio";
-            lblEstadoDomicilio.Size = new Size(121, 18);
-            lblEstadoDomicilio.TabIndex = 60;
-            lblEstadoDomicilio.Text = "Estado Domicilio";
-            // 
-            // txtEstadoDomicilio
-            // 
-            txtEstadoDomicilio.Location = new Point(8, 225);
-            txtEstadoDomicilio.Margin = new Padding(4, 3, 4, 3);
-            txtEstadoDomicilio.Name = "txtEstadoDomicilio";
-            txtEstadoDomicilio.Size = new Size(185, 21);
-            txtEstadoDomicilio.TabIndex = 59;
-            // 
             // txtColonia
             // 
-            txtColonia.Location = new Point(599, 88);
+            txtColonia.Location = new Point(525, 88);
             txtColonia.Margin = new Padding(4, 3, 4, 3);
             txtColonia.Name = "txtColonia";
-            txtColonia.Size = new Size(183, 21);
+            txtColonia.Size = new Size(257, 21);
             txtColonia.TabIndex = 56;
             // 
             // txtMunicipio
             // 
-            txtMunicipio.Location = new Point(427, 88);
+            txtMunicipio.Location = new Point(418, 88);
             txtMunicipio.Margin = new Padding(4, 3, 4, 3);
             txtMunicipio.Name = "txtMunicipio";
-            txtMunicipio.Size = new Size(164, 21);
+            txtMunicipio.Size = new Size(99, 21);
             txtMunicipio.TabIndex = 55;
             // 
             // txtEstado
             // 
-            txtEstado.Location = new Point(90, 88);
+            txtEstado.Location = new Point(81, 88);
             txtEstado.Margin = new Padding(4, 3, 4, 3);
             txtEstado.Name = "txtEstado";
             txtEstado.Size = new Size(145, 21);
             txtEstado.TabIndex = 54;
+            txtEstado.TextChanged += txtEstado_TextChanged;
             // 
             // txtCP
             // 
             txtCP.Location = new Point(8, 88);
             txtCP.Margin = new Padding(4, 3, 4, 3);
             txtCP.Name = "txtCP";
-            txtCP.Size = new Size(75, 21);
+            txtCP.Size = new Size(64, 21);
             txtCP.TabIndex = 53;
             // 
             // lblEstado
             // 
             lblEstado.AutoSize = true;
             lblEstado.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblEstado.Location = new Point(86, 63);
+            lblEstado.Location = new Point(81, 64);
             lblEstado.Margin = new Padding(4, 0, 4, 0);
             lblEstado.Name = "lblEstado";
             lblEstado.Size = new Size(55, 18);
@@ -1222,7 +1206,7 @@
             // 
             lblColonia.AutoSize = true;
             lblColonia.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblColonia.Location = new Point(596, 63);
+            lblColonia.Location = new Point(522, 63);
             lblColonia.Margin = new Padding(4, 0, 4, 0);
             lblColonia.Name = "lblColonia";
             lblColonia.Size = new Size(59, 18);
@@ -1233,7 +1217,7 @@
             // 
             lblCP.AutoSize = true;
             lblCP.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblCP.Location = new Point(6, 63);
+            lblCP.Location = new Point(9, 64);
             lblCP.Margin = new Padding(4, 0, 4, 0);
             lblCP.Name = "lblCP";
             lblCP.Size = new Size(37, 18);
@@ -1255,12 +1239,12 @@
             // 
             lblMunicipio.AutoSize = true;
             lblMunicipio.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblMunicipio.Location = new Point(427, 63);
+            lblMunicipio.Location = new Point(418, 48);
             lblMunicipio.Margin = new Padding(4, 0, 4, 0);
             lblMunicipio.Name = "lblMunicipio";
-            lblMunicipio.Size = new Size(71, 18);
+            lblMunicipio.Size = new Size(79, 18);
             lblMunicipio.TabIndex = 31;
-            lblMunicipio.Text = "Municipio";
+            lblMunicipio.Text = "Municipio /";
             // 
             // lblNoExterior
             // 
@@ -1462,32 +1446,16 @@
             lblAntiguedadDelEmpleado.TabIndex = 64;
             lblAntiguedadDelEmpleado.Text = "ANTIGÜEDAD";
             // 
-            // txtEstadoContDomicilio
+            // label4
             // 
-            txtEstadoContDomicilio.Location = new Point(204, 225);
-            txtEstadoContDomicilio.Margin = new Padding(4, 3, 4, 3);
-            txtEstadoContDomicilio.Name = "txtEstadoContDomicilio";
-            txtEstadoContDomicilio.Size = new Size(219, 21);
-            txtEstadoContDomicilio.TabIndex = 61;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            label3.Location = new Point(429, 201);
-            label3.Margin = new Padding(4, 0, 4, 0);
-            label3.Name = "label3";
-            label3.Size = new Size(139, 18);
-            label3.TabIndex = 70;
-            label3.Text = "Dirección Completa";
-            // 
-            // txtDireccionCompleta
-            // 
-            txtDireccionCompleta.Location = new Point(431, 225);
-            txtDireccionCompleta.Margin = new Padding(4, 3, 4, 3);
-            txtDireccionCompleta.Name = "txtDireccionCompleta";
-            txtDireccionCompleta.Size = new Size(351, 21);
-            txtDireccionCompleta.TabIndex = 69;
+            label4.AutoSize = true;
+            label4.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
+            label4.Location = new Point(418, 64);
+            label4.Margin = new Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new Size(82, 18);
+            label4.TabIndex = 71;
+            label4.Text = "Delegación";
             // 
             // FormEDICIONCENTRALPERSONAL
             // 
@@ -1634,9 +1602,6 @@
         private System.Windows.Forms.TextBox txtMunicipio;
         private System.Windows.Forms.TextBox txtEstado;
         private System.Windows.Forms.TextBox txtCP;
-        private System.Windows.Forms.Label lblEstadoContDomicilio;
-        private System.Windows.Forms.Label lblEstadoDomicilio;
-        private System.Windows.Forms.TextBox txtEstadoDomicilio;
         private DataGridViewTextBoxColumn IdArchivo;
         private DataGridViewTextBoxColumn NumeroEmpleado;
         private DataGridViewTextBoxColumn NombreEmpleado;
@@ -1663,6 +1628,6 @@
         private Label lblPuesto;
         private Label label3;
         private TextBox txtDireccionCompleta;
-        private TextBox txtEstadoContDomicilio;
+        private Label label4;
     }
 }

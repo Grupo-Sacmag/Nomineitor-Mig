@@ -42,6 +42,8 @@ namespace NOMINA_2025
         private ServicioCalculoNomina _servicioCalculo;
         private readonly Dictionary<int, decimal> _subsidioCausadoPorEmpleado = new Dictionary<int, decimal>();
         private RuepRoot _datosEmpresa;
+        private readonly HashSet<int> _empleadosNuevosSinPagoAnterior = new HashSet<int>();
+        private readonly Dictionary<int, int> _diasMaximosSugeridos = new Dictionary<int, int>();
 
         // ── Override de campos manuales ───────────────────────────────────
         // Indexado por idEmpleado (no por rowIndex) — seguro al reordenar
@@ -104,6 +106,7 @@ namespace NOMINA_2025
                 CargarEmpleadosEnGrid();
                 EscalarColumnasSegunDpi();
                 AplicarCalculosIniciales();
+                DetectarYConfirmarEmpleadosNuevosSinPagoAnterior();
                 ActualizarLblDatos();
 
                 _formularioCargado = true;
@@ -226,6 +229,7 @@ namespace NOMINA_2025
             _otrasManualOverride.Clear();
             CargarEmpleadosEnGrid();
             AplicarCalculosIniciales();
+            DetectarYConfirmarEmpleadosNuevosSinPagoAnterior();
             ActualizarLblDatos();
         }
 
@@ -708,6 +712,10 @@ namespace NOMINA_2025
 
                 dgvMostrarPersonal.Rows.Clear();
                 dgvMostrarPersonal.SuspendLayout();
+                string nomArch = Path.GetFileNameWithoutExtension(rutaArchivo).ToUpper();
+
+                bool esFiniquito = nomArch.StartsWith("FINI", StringComparison.OrdinalIgnoreCase);
+                bool esLiquidacion = nomArch.StartsWith("LIQ", StringComparison.OrdinalIgnoreCase);
 
                 foreach (var item in datos)
                 {
@@ -718,12 +726,31 @@ namespace NOMINA_2025
                     row.Cells["NombreEmpleado"].Value = item.Nombre;
                     row.Cells["DiasTrabajados"].Value = item.DiasT;
                     row.Cells["Salario"].Value = item.Sueldo.ToString("N2");
-                    row.Cells["hsNorm"].Value = item.hsNorm.ToString("F2");
-                    row.Cells["hsDobles"].Value = item.hsDobles.ToString("F2");
-                    row.Cells["hsTriples"].Value = item.hsTriples.ToString("F2");
-                    row.Cells["OF"].Value = item.OF.ToString("F2");
+                    row.Cells["hsNorm"].Value = (esFiniquito || esLiquidacion ? item.Compensaciones : item.hsNorm) .ToString("F2");
+                    row.Cells["hsDobles"].Value = (esFiniquito || esLiquidacion ? item.PrimaAntiguedad : item.hsDobles).ToString("F2");
+                    row.Cells["hsTriples"].Value = (esFiniquito || esLiquidacion ? item.Indemnizacion : item.hsTriples).ToString("F2");
+                    row.Cells["OF"].Value = (esFiniquito || esLiquidacion ? item.SueldoVacaciones : item.OF).ToString("F2");
                     row.Cells["PVacac"].Value = item.Pvacacional.ToString("F2");
-                    row.Cells["Otras"].Value = item.Otras.ToString("N0");
+                    decimal otrasDisplay = item.Otras;
+                    if (nomArch.StartsWith("PTU"))
+                    {
+                        otrasDisplay = item.PTU;
+                    }
+                    else if (nomArch.StartsWith("AGUI"))                    
+                    {
+                        otrasDisplay = item.Aguinaldo;
+                    }
+                    else if (nomArch.StartsWith("BONO"))
+                    {
+                        otrasDisplay = item.Bono;
+                    }
+                    else
+                    {
+                        otrasDisplay = item.Otras;
+                    }
+
+                    row.Cells["Otras"].Value =
+                        otrasDisplay.ToString("N2");
                     row.Cells["PercExenta"].Value = item.PercExenta.ToString("F2");
                     row.Cells["TotIngr"].Value = item.TotalIngr.ToString("N2");
                     row.Cells["Ispt"].Value = item.ISTP.ToString("N2");
@@ -840,6 +867,14 @@ namespace NOMINA_2025
             int quincenaNum = rdiobtnPrimera.Checked ? 1 : 2;
             string fileName;
             string tipoNomina;
+            string motivoRegistro = null;
+            string nombreCarpetaEmpresa = RegistroEmpresas.ObtenerNombreCarpeta(RutaTrabajo);
+            if (string.IsNullOrWhiteSpace(nombreCarpetaEmpresa))
+            {
+                MessageBox.Show("Esta carpeta de trabajo aún no tiene una empresa asignada para el respaldo.Debe asignarse antes de poder guardar la nómina.", "Empresa no asignada",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             if (rdiobtnNormal.Checked)
             {
@@ -865,10 +900,12 @@ namespace NOMINA_2025
                         return;
                     }
                     fileName = $"{nombreOtro}.json";
+                    motivoRegistro = nombreOtro;
                 }
                 else
                 {
                     fileName = $"{motivo.Replace(" ", "").ToUpper()}.json";
+                    motivoRegistro = motivo;
                 }
 
                 tipoNomina = "Especial";
@@ -938,6 +975,13 @@ namespace NOMINA_2025
                     if (!tieneAlgo) continue;
                 }
 
+                string motivo = cbMotivo.SelectedItem?.ToString()?.ToUpper() ?? "";
+                bool esPTU = motivo.StartsWith("PTU");
+                bool esAguinaldo = motivo.StartsWith("AGUI");
+                bool esBono = motivo.StartsWith("PREMIO");
+                bool esFiniquito = motivo.StartsWith("FINI");
+                bool esLiquidacion = motivo.StartsWith("LIQ");
+
                 listaJson.Add(new NominaJSON
                 {
                     idNomina = row.Cells["NumeroEmpleado"].Value?.ToString().TrimStart('0') ?? "",
@@ -950,6 +994,13 @@ namespace NOMINA_2025
                     OF = GetDecimal(row, "OF"),
                     Pvacacional = GetDecimal(row, "PVacac"),
                     Otras = GetDecimal(row, "Otras"),
+                    PTU = esPTU ? GetDecimal(row, "Otras") : 0m,
+                    Aguinaldo = esAguinaldo ? GetDecimal(row, "Otras") : 0m,
+                    Bono = esBono ? GetDecimal(row, "OF") : 0m,
+                    Compensaciones = (esFiniquito || esLiquidacion) ? GetDecimal(row, "hsNorm") : 0m,
+                    PrimaAntiguedad = (esFiniquito || esLiquidacion) ? GetDecimal(row, "hsDobles") : 0m,
+                    Indemnizacion = (esFiniquito || esLiquidacion) ? GetDecimal(row, "hsTriples") : 0m,
+                    SueldoVacaciones = (esFiniquito || esLiquidacion) ? GetDecimal(row, "OF") : 0m,
                     PercExenta = GetDecimal(row, "PercExenta"),
                     TotalIngr = GetDecimal(row, "TotIngr"),
                     ISTP = GetDecimal(row, "Ispt"),
@@ -989,7 +1040,13 @@ namespace NOMINA_2025
             {
                 File.WriteAllText(rutaFinal, JsonConvert.SerializeObject(paquete, Formatting.Indented), Encoding.UTF8);
                 File.SetAttributes(rutaFinal, FileAttributes.ReadOnly);
-                BackupService.RespaldarNomina(rutaFinal);
+                BackupService.RespaldarNomina(rutaFinal, nombreCarpetaEmpresa, anio);
+
+                // ── Bitácora ─────────────────────────────────────────
+                decimal totalPagado = listaJson.Sum(x => x.Neto);
+                BackupService.RegistrarNomina(tipoNomina, fileName, totalPagado, nombreCarpetaEmpresa, anio, motivoRegistro);
+
+                RegistrarPagosEspecialesSiAplica(nombreCarpetaEmpresa, anio);
 
                 MessageBox.Show($"Se guardó la nómina '{fileName}'.", "Nómina Guardada", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -1478,6 +1535,11 @@ namespace NOMINA_2025
                     PrimaVacacional = primaVacacionalOriginal,// pva8
                     Otras = otrasParaReng,                     // otr9
 
+                    Compensaciones = GetDecimal(row, "hsNorm"),
+                    PrimaAntiguedad = GetDecimal(row, "hsDobles"),
+                    Indemnizacion = GetDecimal(row, "hsTriples"),
+                    SueldoVacaciones = GetDecimal(row, "OF"),
+
                     // Valor original de columna 10
                     PercExenta = exentoOriginal,
                     ExentoOriginal = exentoOriginal,
@@ -1564,6 +1626,7 @@ namespace NOMINA_2025
                     CodigoPostal = emp.CP ?? "",
 
                     Correo = emp.CorreoEmpresaPredeterminado ? emp.EmailEmpresa ?? "" : emp.Email ?? ""
+
                 };
 
                 // -------------------------------------------------------------
@@ -1741,6 +1804,11 @@ namespace NOMINA_2025
         // ── Columnas por tipo de nómina ───────────────────────────────────
         private void AjustarColumnasParaTipoNomina(string nombreSinExtension)
         {
+            // ============================================================
+            // ENCABEZADOS POR DEFECTO
+            // Se conservan para Nómina Normal y para las Nóminas Especiales
+            // que no tengan un encabezado específico.
+            // ============================================================
             SetColHeader("hsNorm", "Hs. Norm.");
             SetColHeader("hsDobles", "Hs. Dobles");
             SetColHeader("hsTriples", "Hs. Triples");
@@ -1751,37 +1819,82 @@ namespace NOMINA_2025
             SetColHeader("Ispt", "ISPT");
             SetColHeader("SubEmp", "Subsidio");
 
-            string nombre = (nombreSinExtension ?? "").ToUpper().Trim();
-            if (Regex.IsMatch(nombre, @"^[A-Z]{3}\d{5}$")) return;
+            string nombre = (nombreSinExtension ?? "").Trim();
 
-            if (nombre.StartsWith("PTU"))
+            // ============================================================
+            // SI ES NÓMINA NORMAL
+            // ============================================================
+            if (Regex.IsMatch(nombre.ToUpper(), @"^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)(1|2)\d{4}$"))
+            {
+                return;
+            }
+
+            // ============================================================
+            // NÓMINAS ESPECIALES
+            // ============================================================
+
+            // Finiquito / Liquidación
+            // ------------------------------------------------------------
+            // HS.NORM.   -> Compensaciones
+            // HS.DOBLES   -> P. Antigüedad
+            // HS.TRIPLES  -> Indemnizaciones
+            // O.F.        -> Sueldo Vacaciones
+            if (nombre.Equals("Finiquito", StringComparison.OrdinalIgnoreCase) || nombre.Equals("Liquidación", StringComparison.OrdinalIgnoreCase) ||
+                nombre.Equals("Liquidacion", StringComparison.OrdinalIgnoreCase))
+            {
+                SetColHeader("hsNorm", "Compensaciones");
+                SetColHeader("hsDobles", "P. Antigüedad");
+                SetColHeader("hsTriples", "Indemnizaciones");
+                SetColHeader("OF", "Sueldo Vacaciones");
+
+                AjustarAnchoColumnasEncabezados();
+
+                return;
+            }
+
+            // Premio de Puntualidad
+            // ------------------------------------------------------------
+            // La columna que actualmente aparece sin encabezado deberá
+            // mostrar "Bono".
+            if (nombre.Equals("Premio de Puntualidad", StringComparison.OrdinalIgnoreCase))
+            {
+                SetColHeader("OF", "Bono");
+
+                return;
+            }
+
+            // ============================================================
+            // RESTO DE NÓMINAS ESPECIALES
+            // Se conserva el comportamiento que ya tenía el programa.
+            // ============================================================
+
+            if (nombre.StartsWith("PTU", StringComparison.OrdinalIgnoreCase))
             {
                 SetColHeader("Otras", "P.T.U.");
                 SetColHeader("PVacac", "—");
             }
-            else if (nombre.StartsWith("AGUIN"))
+            else if (nombre.StartsWith("AGUIN", StringComparison.OrdinalIgnoreCase))
             {
                 SetColHeader("Otras", "Aguinaldo");
                 SetColHeader("PVacac", "—");
             }
-            else if (nombre.StartsWith("PRE"))
+            else if (nombre.StartsWith("PRE", StringComparison.OrdinalIgnoreCase))
             {
                 SetColHeader("hsTriples", "Viáticos");
                 SetColHeader("OF", "—");
             }
-            else if (nombre.Contains("VACAC"))
+            else if (nombre.Contains("VACAC", StringComparison.OrdinalIgnoreCase))
             {
                 SetColHeader("Otras", "P. Vacacional");
                 SetColHeader("PVacac", "—");
             }
-            else if (nombre.StartsWith("LIQ") || nombre.StartsWith("LIQUID"))
+            else if (!string.IsNullOrWhiteSpace(nombre) &&
+                     !nombre.Equals("OTROS", StringComparison.OrdinalIgnoreCase))
             {
-                SetColHeader("Otras", "Liquidación");
-                SetColHeader("Salario", "Sueldo Acum.");
-            }
-            else if (!string.IsNullOrWhiteSpace(nombre) && nombre != "OTROS")
-            {
-                string etiqueta = nombre.Length > 11 ? nombre[..11] : nombre;
+                string etiqueta = nombre.Length > 11
+                    ? nombre[..11]
+                    : nombre;
+
                 SetColHeader("Otras", etiqueta);
             }
         }
@@ -1790,6 +1903,21 @@ namespace NOMINA_2025
         {
             if (dgvMostrarPersonal.Columns.Contains(colName))
                 dgvMostrarPersonal.Columns[colName].HeaderText = headerText;
+        }
+
+        private void AjustarAnchoColumnasEncabezados()
+        {
+            if (dgvMostrarPersonal.Columns.Contains("hsNorm"))
+                dgvMostrarPersonal.Columns["hsNorm"].Width = 115;
+
+            if (dgvMostrarPersonal.Columns.Contains("hsDobles"))
+                dgvMostrarPersonal.Columns["hsDobles"].Width = 105;
+
+            if (dgvMostrarPersonal.Columns.Contains("hsTriples"))
+                dgvMostrarPersonal.Columns["hsTriples"].Width = 120;
+
+            if (dgvMostrarPersonal.Columns.Contains("OF"))
+                dgvMostrarPersonal.Columns["OF"].Width = 125;
         }
 
         // ── Helpers de lectura binaria VB6 ────────────────────────────────
@@ -2047,8 +2175,10 @@ namespace NOMINA_2025
 
             if (colName == "DiasTrabajados")
             {
-                int topeDias = rdiobtnEspecial.Checked ? 30 : 15;
+                if (rdiobtnEspecial.Checked)
+                    return; // sin tope en nómina especial — decisión de negocio confirmada
 
+                int topeDias = 15;
                 if (int.TryParse(tb.Text, out int valor) && valor > topeDias)
                 {
                     tb.Text = topeDias.ToString();
@@ -3039,6 +3169,119 @@ namespace NOMINA_2025
             lblDatos.Top = 18;
 
             lblDatos.BringToFront();
+        }
+
+        private static int ContarDiasHabiles(DateTime inicio, DateTime fin)
+        {
+            if (fin < inicio) return 0;
+            int dias = 0;
+            for (DateTime d = inicio.Date; d <= fin.Date; d = d.AddDays(1))
+                if (d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
+                    dias++;
+            return dias;
+        }
+
+        private void ObtenerRangoQuincenaAnterior(out DateTime inicio, out DateTime fin, out int mes, out int anioResultado, out bool esPrimera)
+        {
+            int mesActual = ObtenerMesNomina();
+            if (rdiobtnPrimera.Checked)
+            {
+                mes = mesActual == 1 ? 12 : mesActual - 1;
+                anioResultado = mesActual == 1 ? anio - 1 : anio;
+                esPrimera = false;
+                inicio = new DateTime(anioResultado, mes, 16);
+                fin = new DateTime(anioResultado, mes, DateTime.DaysInMonth(anioResultado, mes));
+            }
+            else
+            {
+                mes = mesActual;
+                anioResultado = anio;
+                esPrimera = true;
+                inicio = new DateTime(anioResultado, mes, 1);
+                fin = new DateTime(anioResultado, mes, 15);
+            }
+        }
+
+        private void DetectarYConfirmarEmpleadosNuevosSinPagoAnterior()
+        {
+            _empleadosNuevosSinPagoAnterior.Clear();
+            _diasMaximosSugeridos.Clear();
+
+            if (!rdiobtnNormal.Checked) return;
+            if (string.IsNullOrWhiteSpace(RutaTrabajo)) return;   // ← nuevo: aún no está inicializado (se dispara desde el constructor)
+
+            ObtenerRangoQuincenaAnterior(out DateTime inicioAnt, out DateTime finAnt, out int mesAnt, out int anioAnt, out bool antEsPrimera);
+            string archivoAnterior = Path.Combine(RutaTrabajo, $"{AbrevMes(mesAnt)}{(antEsPrimera ? 1 : 2)}{anioAnt}.json");
+
+
+            var idsEnQuincenaAnterior = new HashSet<string>();
+            if (File.Exists(archivoAnterior))
+            {
+                try { idsEnQuincenaAnterior = NominaJsonService.Cargar(archivoAnterior).Select(d => d.idNomina).ToHashSet(); }
+                catch { /* si no se puede leer, se trata como si no existiera */ }
+            }
+
+            ObtenerRangoQuincena(out _, out DateTime finAct);
+
+            foreach (var emp in _empleadosActivos ?? Enumerable.Empty<EmpleadoCompleto>())
+            {
+                if (!DateTime.TryParseExact(emp.FechaAlta, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fechaAlta))
+                    continue;
+
+                bool altaEnQuincenaAnterior = fechaAlta >= inicioAnt && fechaAlta <= finAnt;
+                bool noApareceEnAnterior = !idsEnQuincenaAnterior.Contains(emp.Id.ToString());
+                if (!altaEnQuincenaAnterior || !noApareceEnAnterior) continue;
+
+                string nombreCompleto = $"{emp.Nombre} {emp.ApellidoP} {emp.ApellidoM}".Trim();
+                var respuesta = MessageBox.Show(
+                    $"El empleado \"{nombreCompleto}\" no se encontró en la quincena anterior.\n\n" +
+                    "¿Se realizará el pago correspondiente en esta captura?",
+                    "Empleado sin pago en quincena anterior",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+
+                if (respuesta != DialogResult.Yes) continue;
+
+                _empleadosNuevosSinPagoAnterior.Add(emp.Id);
+                _diasMaximosSugeridos[emp.Id] = ContarDiasHabiles(fechaAlta, finAct);
+
+                // resaltado discreto, se mantiene como recordatorio visual mientras captura
+                var row = dgvMostrarPersonal.Rows.Cast<DataGridViewRow>()
+                    .FirstOrDefault(r => r.Cells["NumeroEmpleado"].Value?.ToString() == emp.Id.ToString());
+                if (row != null)
+                {
+                    row.Cells["DiasTrabajados"].Style.BackColor = Color.FromArgb(255, 243, 205);
+                    row.Cells["DiasTrabajados"].ToolTipText = $"Días hábiles disponibles: {_diasMaximosSugeridos[emp.Id]}";
+                }
+            }
+        }
+
+        private void RegistrarPagosEspecialesSiAplica(string nombreCarpetaEmpresa, int anio)
+        {
+            if (_empleadosNuevosSinPagoAnterior.Count == 0) return;
+
+            foreach (DataGridViewRow row in dgvMostrarPersonal.Rows)
+            {
+                if (row.IsNewRow || row.Tag?.ToString() == "Totales") continue;
+                if (!int.TryParse(row.Cells["NumeroEmpleado"].Value?.ToString(), out int idEmp)) continue;
+                if (!_empleadosNuevosSinPagoAnterior.Contains(idEmp)) continue;
+
+                int diasCapturados = GetInt(row, "DiasTrabajados");
+                string nombre = row.Cells["NombreEmpleado"].Value?.ToString() ?? $"Empleado {idEmp}";
+                int diasMax = _diasMaximosSugeridos.TryGetValue(idEmp, out int d) ? d : 15;
+
+                ResultadoPagoEspecial resultado;
+                if (diasCapturados > diasMax)
+                    resultado = ResultadoPagoEspecial.Excedido;
+                else if (diasCapturados > 15)
+                    resultado = ResultadoPagoEspecial.Correspondiente;
+                else
+                    resultado = ResultadoPagoEspecial.NoRecibido; // confirmó pero no le pagó lo pendiente
+
+                LogService.RegistrarEventoNomina(nombre, resultado, nombreCarpetaEmpresa, anio);
+
+                if (resultado == ResultadoPagoEspecial.Excedido)
+                    _ = EmailService.NotificarPagoExcedidoAsync(Environment.MachineName, _datosEmpresa?.nombre ?? "EMPRESA", nombre);
+            }
         }
     }
 }

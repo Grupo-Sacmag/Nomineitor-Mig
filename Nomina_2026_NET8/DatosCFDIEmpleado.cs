@@ -101,5 +101,12 @@ namespace Nomina_2026_NET8
         public bool TieneAguinaldoOriginal { get; set; }
         public bool TienePTUOriginal { get; set; }
         public bool TieneExentoOriginal { get; set; }
+
+        public decimal Compensaciones { get; set; }
+        public decimal PrimaAntiguedad { get; set; }
+        public decimal Indemnizacion { get; set; }
+        public decimal SueldoVacaciones { get; set; }
+        public decimal AguinaldoFiniquito { get; set; }
+        public decimal PrimaVacacionalFiniquito { get; set; }
     }
 }

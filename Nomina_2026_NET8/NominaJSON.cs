@@ -22,7 +22,21 @@ namespace Nomina_2026_NET8
     {
         public string idNomina { get; set; }
         public string Nombre { get; set; }
-        public int DiasT { get; set; }
+        public decimal DiasT { get; set; }
+        public decimal Aguinaldo { get; set; }
+        public decimal PTU { get; set; }
+        public decimal Bono { get; set; }
+        public decimal Compensaciones { get; set; }
+        public decimal PrimaAntiguedad { get; set; }
+        public decimal Indemnizacion { get; set; }
+        public decimal SueldoVacaciones { get; set; }
+        public decimal AguinaldoFiniquito { get; set; }
+        public decimal PrimaVacacionalFiniquito { get; set; }
+        public decimal ISRCalculado { get; set; }     // ImpTot
+        public decimal SubsidioAplicado { get; set; } // subapl
+        public decimal SubsidioNoAplicado { get; set; } // subNap
+        public decimal CreditoAplicado { get; set; } // CreTot
+        public decimal CreditoPagado { get; set; } // CredNe
         public decimal Sueldo { get; set; }
         public decimal hsNorm { get; set; }
         public decimal hsDobles { get; set; }

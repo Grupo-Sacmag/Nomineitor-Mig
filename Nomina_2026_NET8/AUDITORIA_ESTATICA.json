@@ -1,0 +1,27 @@
+{
+  "revisiones": {
+    "cuatro_forms_actualizados": true,
+    "servicio_persiste_integrado_en_ingresos": true,
+    "historial_preservado": true,
+    "modelo_v9": true,
+    "sin_escritura_sql": true,
+    "generador_cfdi_v9": true,
+    "cifrado_con_respaldo": true,
+    "todos_archivos_originales_conservados": true
+  },
+  "archivos_modificados": [
+    "BDSyncService.cs",
+    "CryptoService.cs",
+    "DatosInicioCfdiNomina.cs",
+    "EmpleadoCompleto.cs",
+    "FormCaptura.cs",
+    "FormEDICIONCENTRALPERSONAL.cs",
+    "FormEmpresaUnificado.cs",
+    "FormPrincipal.cs",
+    "RuepGenerator.cs",
+    "RuepRoot.cs",
+    "RuepService.cs"
+  ],
+  "total_fuentes_originales": 57,
+  "compilacion_net8_realizada": false
+}

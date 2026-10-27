@@ -12,9 +12,8 @@ namespace Nomina_2026_NET8
         /// </summary>
         public static void EnsureDirectories()
         {
-            Directory.CreateDirectory(AppPaths.BackupNominas);
+            Directory.CreateDirectory(AppPaths.Raiz);
             Directory.CreateDirectory(AppPaths.Tarifas);
-            Directory.CreateDirectory(AppPaths.AcumuladosBackUp); // 🔧 agregado
         }
     }
 }

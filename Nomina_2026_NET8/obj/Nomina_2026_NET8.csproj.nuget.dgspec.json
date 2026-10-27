@@ -180,6 +180,10 @@
               "target": "Package",
               "version": "[10.0.8, )"
             },
+            "System.Security.Cryptography.ProtectedData": {
+              "target": "Package",
+              "version": "[10.0.12, )"
+            },
             "System.Text.Encodings.Web": {
               "target": "Package",
               "version": "[10.0.8, )"
@@ -212,7 +216,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

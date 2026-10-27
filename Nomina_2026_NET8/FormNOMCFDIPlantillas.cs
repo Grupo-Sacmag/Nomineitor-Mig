@@ -67,7 +67,7 @@ namespace NOMINA_2025
         private void tsPrimeraPlantilla_Click(object sender, EventArgs e) => CambiarVista(TipoPlantilla.Primera);
         private void tsSegundaPlantilla_Click(object sender, EventArgs e) => CambiarVista(TipoPlantilla.Segunda);
         private void tsSeleccionarYCopiarTodoPrimera_Click(object sender, EventArgs e) => CopiarGridComoTexto(dgvPlantillas, colInicio: 0, colFin: dgvPlantillas.Columns.Count - 1);
-        private void tsSeleccionarYCopiarTodoSegunda_Click(object sender, EventArgs e) => CopiarGridComoTexto(dgvPlantillas, colInicio: COL_SEG_RFC, colFin: COL_SEG_BANDERA);
+        private void tsSeleccionarYCopiarTodoSegunda_Click(object sender, EventArgs e) => CopiarGridComoTexto(dgvPlantillas, colInicio: 0, colFin: dgvPlantillas.Columns.Count - 1);
 
         // ── API pública ───────────────────────────────────────────────────        
 
@@ -134,7 +134,8 @@ namespace NOMINA_2025
 
                 for (int f = colInicio; f <= colFin; f++)
                 {
-                    sb.Append(row.Cells[f].Value?.ToString() ?? string.Empty);
+                    //sb.Append(row.Cells[f].Value?.ToString() ?? string.Empty);
+                    sb.Append(row.Cells[f].FormattedValue?.ToString() ?? string.Empty);
                     if (f < colFin)
                         sb.Append('\t');
                 }
