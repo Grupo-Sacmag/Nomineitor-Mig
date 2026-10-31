@@ -954,8 +954,12 @@ namespace NOMINA_2025
 
         private bool ExistenArchivosBaseParaRuep(string ruta)
         {
-            string[] requeridos = { "empresa.dno", "Empcomp.dno", "personal.dno", "PerOtre.dno", "Perscfdi.dno", "Bnxcla.dno" };
-            return requeridos.All(f => File.Exists(Path.Combine(ruta, f)));
+            if (string.IsNullOrWhiteSpace(ruta) || !Directory.Exists(ruta))
+                return false;
+
+            string[] requeridos = { "empresa.dno", "Empcomp.dno", "EMP_CFDI.DNO", "personal.dno", "PerOtre.dno", "Perscfdi.dno" };
+
+            return requeridos.All(nombre => File.Exists(Path.Combine(ruta, nombre)));
         }
 
         // ── Tablas fiscales ───────────────────────────────────────────────

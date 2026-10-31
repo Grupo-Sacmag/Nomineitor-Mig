@@ -44,27 +44,34 @@ namespace NOMINA_2025
         private RuepRoot _datosEmpresa;
         private readonly HashSet<int> _empleadosNuevosSinPagoAnterior = new HashSet<int>();
         private readonly Dictionary<int, int> _diasMaximosSugeridos = new Dictionary<int, int>();
+        private readonly HashSet<string> _columnasBloqueadasPorTipo = new HashSet<string>();
 
         // ── Override de campos manuales ───────────────────────────────────
         // Indexado por idEmpleado (no por rowIndex) — seguro al reordenar
         private readonly HashSet<int> _otrasManualOverride = new HashSet<int>();
+        // Exentas capturadas manualmente por empleado.
+        // La clave es el ID, nunca la posición del grid.
+        private readonly Dictionary<int, decimal> _exentaManualPorEmpleado = new();
+        private bool _actualizandoExentas = false;
         private readonly HashSet<string> _fiscalManualOverride = new HashSet<string>();
         private readonly HashSet<string> _columnasOverrideFiscal = new HashSet<string> { "Ispt", "SubEmp", "IMSS" };
 
         // ── Columnas ──────────────────────────────────────────────────────
-        private readonly HashSet<string> ColumnasQueRecalculan = new HashSet<string> { "DiasTrabajados", "hsNorm", "hsDobles", "hsTriples", "OF", "PVacac", "PercExenta", "Otras", "Prestamos",
+        private readonly HashSet<string> ColumnasQueRecalculan = new HashSet<string> { "DiasTrabajados", "Salario","hsNorm", "hsDobles", "hsTriples", "OF", "PVacac", "PercExenta", "Otras", "Prestamos",
             "FONACOT", "PensionAliment", "INFONAVIT" };
-
         private readonly string[] _columnasVisiblesPorDefecto = { "NumeroEmpleado", "NombreEmpleado", "DiasTrabajados", "Salario", "hsNorm", "hsDobles", "hsTriples", "OF", "PVacac", "Otras",
             "PercExenta", "TotIngr", "Ispt", "SubEmp", "IMSS", "Prestamos", "FONACOT", "PensionAliment", "INFONAVIT", "TotDeduc", "NETO", "BANAMEX" };
-
         private readonly string[] _columnasMovimientoNominaEspecial = { "DiasTrabajados", "Salario", "hsNorm", "hsDobles", "hsTriples", "OF", "PVacac", "Otras",
             "PercExenta", "TotIngr", "Ispt", "SubEmp", "IMSS", "Prestamos", "FONACOT", "PensionAliment", "INFONAVIT", "TotDeduc", "NETO" };
+        private static readonly string[] _columnasDeConcepto = { "DiasTrabajados", "Salario", "hsNorm", "hsDobles", "hsTriples", "OF", "PVacac", "Otras", "PercExenta" };
 
         // ── Ordenamiento ──────────────────────────────────────────────────
         private int _ultimaColumnaOrdenada = -1;
         private SortOrder _ultimoOrden = SortOrder.None;
         private int _filaResaltada = -1;
+        private TipoNominaCaptura _tipoColumnasActual = TipoNominaCaptura.Ordinaria;
+        private int _indiceMotivoAnterior = -1;
+        private bool _revirtiendoMotivo = false;
 
         public FormCaptura()
         {
@@ -140,10 +147,34 @@ namespace NOMINA_2025
             if (!rdiobtnEspecial.Checked) return;
             ActualizarVisibilidadCE(cbMotivo.SelectedItem?.ToString() ?? "");
             AplicarVisibilidadPorTipoNomina(forzarActualizarGrid: true);
+            AjustarColumnasParaTipoNomina(cbMotivo.SelectedItem?.ToString() ?? "OTROS");
         }
 
         private void cbMotivo_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_revirtiendoMotivo) return;
+
+            // Cambiar el motivo cambia el significado de las columnas: no mezclar capturas.
+            if (_formularioCargado && rdiobtnEspecial.Checked && cbMotivo.SelectedIndex >= 0 && cbMotivo.SelectedIndex != _indiceMotivoAnterior && HayCapturaEnGrid())
+            {
+                if (MessageBox.Show("Cambiar el motivo cambia el significado de las columnas.\n\nSe borrará lo capturado en la tabla. ¿Deseas continuar?", "Cambiar motivo",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.No)
+                {
+                    _revirtiendoMotivo = true;
+                    cbMotivo.SelectedIndex = _indiceMotivoAnterior;
+                    _revirtiendoMotivo = false;
+                    return;
+                }
+            }
+            _indiceMotivoAnterior = cbMotivo.SelectedIndex;
+
+            if (_formularioCargado && rdiobtnEspecial.Checked && cbMotivo.SelectedIndex >= 0)
+            {
+                _otrasManualOverride.Clear();
+                CargarEmpleadosEnGrid();
+                AplicarCalculosIniciales();
+            }
+
             string motivo = cbMotivo.SelectedItem?.ToString() ?? "";
 
             if (motivo.Equals("OTROS...", StringComparison.OrdinalIgnoreCase))
@@ -167,25 +198,28 @@ namespace NOMINA_2025
             ActualizarVisibilidadCE(motivo);
         }
 
-        // ── Crédito/Exención especial (equivalente a Text3/"exento" de VB6) ─
-        // Solo aplica para PTU y Aguinaldo, igual que en checar() (Case 5 / Case 6 del VB6).
-        // Para cualquier otro motivo (Liquidación, Finiquito, Bono, etc.) el control
-        // permanece oculto, tal como en el original: esos conceptos pasan sin repartir
-        // (Case 4 en VB6 — "dato_sal = dato_ent" directo, sin exención).
-        // La regla vive en ConstantesNomina.EsMotivoPtuOAguinaldo (CalculadoraNomina.cs)
-        // para que la UI y el motor de cálculo nunca se desincronicen sobre qué motivos aplican.
+        // ── Crédito/Exención especial (equivalente a Text3/"exento" de VB6) ─ Solo aplica para PTU y Aguinaldo, igual que en checar() (Case 5 / Case 6 del VB6).
+        // Para cualquier otro motivo (Liquidación, Finiquito, Bono, etc.) el control permanece oculto, tal como en el original: esos conceptos pasan sin repartir (Case 4 en VB6 — "dato_sal = dato_ent" directo, sin exención).
+        // La regla vive en ConstantesNomina.EsMotivoPtuOAguinaldo (CalculadoraNomina.cs) para que la UI y el motor de cálculo nunca se desincronicen sobre qué motivos aplican.
         private void ActualizarVisibilidadCE(string motivo)
         {
-            bool aplica = rdiobtnEspecial.Checked && ConstantesNomina.EsMotivoPtuOAguinaldo(motivo);
+            TipoNominaCaptura tipo = PerfilColumnasNomina.Clasificar(motivo);
 
-            chkBoxCE.Visible = aplica;
+            bool primaVacacionalEspecial = tipo == TipoNominaCaptura.Otra && PerfilColumnasNomina.Normalizar(motivo).Contains("VACAC");
+            bool aplicaGlobal = !rdiobtnEspecial.Checked || tipo == TipoNominaCaptura.PTU || tipo == TipoNominaCaptura.Aguinaldo || primaVacacionalEspecial;
 
-            if (!aplica)
+            chkBoxCE.Visible = aplicaGlobal;
+
+            if (!aplicaGlobal)
             {
                 chkBoxCE.Checked = false;
-                txtCE.Text = "";
                 txtCE.Visible = false;
                 lblCE.Visible = false;
+            }
+            else
+            {
+                txtCE.Visible = chkBoxCE.Checked;
+                lblCE.Visible = chkBoxCE.Checked;
             }
         }
 
@@ -233,10 +267,151 @@ namespace NOMINA_2025
             ActualizarLblDatos();
         }
 
+        private bool TryObtenerExentaGlobal(out decimal monto)
+        {
+            monto = 0m;
+            string texto = (txtCE.Text ?? "").Replace("$", "").Replace(",", "").Trim();
+
+            if (!decimal.TryParse(texto, NumberStyles.Number, CultureInfo.InvariantCulture, out monto))
+            {
+                return false;
+            }
+
+            return monto >= 0m && decimal.Round(monto, 2) == monto;
+        }
+
+        private decimal ObtenerBrutoAplicableExenta(DataGridViewRow fila)
+        {
+            decimal primaVacacional = GetDecimalSeguro(fila, "PVacac");
+
+            if (!rdiobtnEspecial.Checked)
+                return primaVacacional;
+
+            string motivo = cbMotivo.SelectedItem?.ToString() ?? "";
+
+            TipoNominaCaptura tipo = PerfilColumnasNomina.Clasificar(motivo);
+
+            if (tipo == TipoNominaCaptura.PTU || tipo == TipoNominaCaptura.Aguinaldo)
+            {
+                return GetDecimalSeguro(fila, "Otras");
+            }
+
+            if (tipo == TipoNominaCaptura.Otra && PerfilColumnasNomina.Normalizar(motivo).Contains("VACAC"))
+            {
+                return GetDecimalSeguro(fila, "Otras");
+            }
+
+            // En separaciones, permitir capturar el total exento individual sujeto al límite del bruto.
+            // Su distribución por concepto quedará para el modelo detallado de JSON.
+            if (PerfilColumnasNomina.EsSeparacion(tipo))
+            {
+                // Formato nuevo de separación de C#:
+                //
+                // hsDobles = Aguinaldo
+                // hsTriples = Prima de antigüedad
+                // PVacac = Prima vacacional
+                //
+                // OF = Indemnización en liquidaciones
+                // OF = Bono en finiquitos
+                //
+                // No considerar automáticamente como exentables
+                // salario, compensaciones, sueldo de vacaciones,
+                // bono ni otros conceptos sin clasificación.
+
+                decimal aguinaldo = Math.Max(0m, GetDecimalSeguro(fila, "hsDobles"));
+                decimal primaAntiguedad = Math.Max(0m, GetDecimalSeguro(fila, "hsTriples"));
+                primaVacacional = Math.Max(0m, primaVacacional);
+                decimal indemnizacion = tipo == TipoNominaCaptura.Liquidacion ? Math.Max(0m, GetDecimalSeguro(fila, "OF")) : 0m;
+
+                return aguinaldo + primaAntiguedad + primaVacacional + indemnizacion;
+            }
+
+            return 0m;
+        }
+
+        private void AplicarExentaGlobal()
+        {
+            if (_actualizandoExentas || !_formularioCargado)
+                return;
+
+            decimal monto = 0m;
+
+            if (chkBoxCE.Checked && !TryObtenerExentaGlobal(out monto))
+            {
+                return;
+            }
+
+            var filas = dgvMostrarPersonal.Rows.Cast<DataGridViewRow>().Where(f => !f.IsNewRow && f.Tag?.ToString() != "Totales").ToList();
+
+            // No aplicar una exenta superior al concepto bruto de alguno de los empleados afectados.
+            if (chkBoxCE.Checked)
+            {
+                var invalidas = filas.Where(f =>
+                {
+                    if (!int.TryParse(f.Cells["NumeroEmpleado"].Value?.ToString(), out int id))
+                        return false;
+
+                    if (_exentaManualPorEmpleado.ContainsKey(id))
+                        return false;
+
+                    decimal bruto = ObtenerBrutoAplicableExenta(f);
+
+                    return bruto > 0m && monto > bruto;
+                }).ToList();
+
+                if (invalidas.Count > 0)
+                {
+                    MessageBox.Show("El importe exento global excede el concepto bruto de uno o más empleados.\n\nNo se aplicó el cambio global.\nRevisa el importe o captura una exenta " +
+                        "individual para esos empleados.", "Importe exento no aplicable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            _actualizandoExentas = true;
+
+            try
+            {
+                foreach (DataGridViewRow fila in filas)
+                {
+                    if (!int.TryParse(fila.Cells["NumeroEmpleado"].Value?.ToString(), out int id))
+                        continue;
+
+                    // Una excepción manual siempre tiene prioridad.
+                    if (_exentaManualPorEmpleado.ContainsKey(id))
+                        continue;
+
+                    decimal bruto = ObtenerBrutoAplicableExenta(fila);
+                    decimal exentaNueva = chkBoxCE.Checked && bruto > 0m ? monto : 0m;
+
+                    if (GetDecimalSeguro(fila, "PercExenta") == exentaNueva)
+                        continue;
+
+                    fila.Cells["PercExenta"].Value = exentaNueva.ToString("F2", CultureInfo.InvariantCulture);
+                    RecalcularFilaCompleta(fila.Index, "PercExenta");
+                }
+            }
+            finally
+            {
+                _actualizandoExentas = false;
+            }
+
+            AgregarFilaTotales();
+        }
         private void chkBoxCE_CheckedChanged(object sender, EventArgs e)
         {
             lblCE.Visible = chkBoxCE.Checked;
             txtCE.Visible = chkBoxCE.Checked;
+
+            if (!_formularioCargado)
+                return;
+
+            if (chkBoxCE.Checked)
+            {
+                MessageBox.Show("La cantidad exenta global se aplicará a los empleados que tengan el concepto de percepción correspondiente.\n\nSi modificas la columna Percepción Exenta " +
+                    "de un empleado, solamente ese empleado conservará su importe individual.", "Percepción exenta global", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            AplicarExentaGlobal();
         }
 
         private void cbMes_SelectedIndexChanged(object sender, EventArgs e)
@@ -403,7 +578,11 @@ namespace NOMINA_2025
 
         private void tsMostrarColumna_Click(object sender, EventArgs e)
         {
-            if (sender is ToolStripMenuItem item && item.Tag is string colName && dgvMostrarPersonal.Columns.Contains(colName)) dgvMostrarPersonal.Columns[colName].Visible = item.Checked;
+            if (sender is ToolStripMenuItem item && item.Tag is string colName && dgvMostrarPersonal.Columns.Contains(colName))
+            {
+                if (_columnasBloqueadasPorTipo.Contains(colName)) { item.Checked = false; return; }
+                dgvMostrarPersonal.Columns[colName].Visible = item.Checked;
+            }
         }
 
         private void tsReestablecerTabla_Click(object sender, EventArgs e)
@@ -420,6 +599,8 @@ namespace NOMINA_2025
                         item.Checked = column.Visible;
                 }
             }
+
+            AplicarColumnasVisiblesPorTipo(_tipoColumnasActual);
         }
 
         private void tsSeleccionarTodo_Click(object sender, EventArgs e) => dgvMostrarPersonal.SelectAll();
@@ -453,11 +634,76 @@ namespace NOMINA_2025
         private void dgvMostrarPersonal_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             if (_recalculandoFila) return;
-            if (e.RowIndex < 0 ||
-                dgvMostrarPersonal.Rows[e.RowIndex].Tag?.ToString() == "Totales")
+            if (e.RowIndex < 0 || dgvMostrarPersonal.Rows[e.RowIndex].Tag?.ToString() == "Totales")
                 return;
 
             string colName = dgvMostrarPersonal.Columns[e.ColumnIndex].Name;
+            var filaActual = dgvMostrarPersonal.Rows[e.RowIndex];
+
+            if (!int.TryParse(filaActual.Cells["NumeroEmpleado"].Value?.ToString(), out int idEmpleadoExenta))
+            {
+                return;
+            }
+
+            if (colName == "PercExenta")
+            {
+                // Si se dejó la celda vacía, quitar la excepción individual de este empleado.
+                string textoExenta = filaActual.Cells["PercExenta"].Value?.ToString()?.Trim() ?? "";
+
+                if (string.IsNullOrWhiteSpace(textoExenta))
+                {
+                    _exentaManualPorEmpleado.Remove(idEmpleadoExenta);
+
+                    decimal exentaRestaurada = 0m;
+
+                    if (chkBoxCE.Checked && TryObtenerExentaGlobal(out decimal exentaGlobal))
+                    {
+                        decimal bruto = ObtenerBrutoAplicableExenta(filaActual);
+
+                        if (bruto > 0m && exentaGlobal <= bruto)
+                        {
+                            exentaRestaurada = exentaGlobal;
+                        }
+                        else if (bruto > 0m && exentaGlobal > bruto)
+                        {
+                            MessageBox.Show("La percepción exenta global excede el bruto aplicable de este empleado.\n\nSe dejará su exenta en cero hasta que corrijas el importe.",
+                                "Revisar exenta global", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+
+                    filaActual.Cells["PercExenta"].Value = exentaRestaurada.ToString("F2", CultureInfo.InvariantCulture);
+
+                    RecalcularFilaCompleta(e.RowIndex, "PercExenta");
+
+                    return;
+                }
+
+                decimal exentaCapturada = GetDecimalSeguro(filaActual, "PercExenta");
+                decimal brutoAplicable = ObtenerBrutoAplicableExenta(filaActual);
+
+                if (exentaCapturada < 0m || exentaCapturada > brutoAplicable)
+                {
+                    MessageBox.Show("La percepción exenta no puede ser negativa ni exceder el importe bruto aplicable.\n\nRevisa el concepto y su cantidad exenta.", "Percepción exenta inválida",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    filaActual.Cells["PercExenta"].Value = "0.00";
+                    _exentaManualPorEmpleado[idEmpleadoExenta] = 0m;
+                }
+                else
+                {
+                    bool primeraExcepcion = !_exentaManualPorEmpleado.ContainsKey(idEmpleadoExenta);
+                    _exentaManualPorEmpleado[idEmpleadoExenta] = exentaCapturada;
+
+                    if (chkBoxCE.Checked && primeraExcepcion)
+                    {
+                        MessageBox.Show($"Se aplicará una percepción exenta individual " + $"al empleado {idEmpleadoExenta}.\n\nEl importe global seguirá aplicándose a los demás empleados.",
+                            "Exenta individual", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+
+                RecalcularFilaCompleta(e.RowIndex, "PercExenta");
+                return;
+            }
 
             if (_columnasOverrideFiscal.Contains(colName))
             {
@@ -467,7 +713,13 @@ namespace NOMINA_2025
                     return;
                 }
 
-                string clave = $"{e.RowIndex}_{colName}";
+                if (!int.TryParse(dgvMostrarPersonal.Rows[e.RowIndex].Cells["NumeroEmpleado"].Value?.ToString(), out int idFiscal))
+                {
+                    return;
+                }
+
+                // Identificar el cambio por empleado y concepto, nunca por la posición de la fila.
+                string clave = $"{idFiscal}:{colName}";
                 if (MessageBox.Show("Si modifica esta celda ya no se efectuará el cálculo automático de la retención.\n\n¿Mantener el valor ingresado?", "Modificación Manual",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
                 {
@@ -482,46 +734,41 @@ namespace NOMINA_2025
                 return;
             }
 
-            if (colName == "Otras")
-                AplicarRepartoExentoEspecial(dgvMostrarPersonal.Rows[e.RowIndex]);
+            // Actualizar el importe exento al modificar un concepto que puede contener una parte exenta.
+            if (colName == "Otras" || colName == "PVacac")
+            {
+                decimal brutoAplicable = ObtenerBrutoAplicableExenta(filaActual);
+
+                if (_exentaManualPorEmpleado.TryGetValue(idEmpleadoExenta, out decimal exentaManual))
+                {
+                    if (exentaManual > brutoAplicable)
+                    {
+                        filaActual.Cells["PercExenta"].Value = "0.00";
+                        _exentaManualPorEmpleado[idEmpleadoExenta] = 0m;
+
+                        MessageBox.Show("El concepto bruto cambió y la exenta individual anterior ya no es válida.\n\nSe restableció a cero para este empleado.", "Revisar percepción exenta",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                else if (chkBoxCE.Checked && TryObtenerExentaGlobal(out decimal exentaGlobal))
+                {
+                    if (brutoAplicable > 0m && exentaGlobal > brutoAplicable)
+                    {
+                        filaActual.Cells["PercExenta"].Value = "0.00";
+
+                        MessageBox.Show("El importe exento global supera el concepto bruto de este empleado.\n\nCorrige el importe global o captura una exenta individual.",
+                            "Exenta global no aplicable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    else
+                    {
+                        decimal exentaAplicar = brutoAplicable > 0m ? exentaGlobal : 0m;
+                        filaActual.Cells["PercExenta"].Value = exentaAplicar.ToString("F2", CultureInfo.InvariantCulture);
+                    }
+                }
+            }
 
             if (ColumnasQueRecalculan.Contains(colName))
                 RecalcularFilaCompleta(e.RowIndex, colName);
-        }
-
-        // ── Reparto automático gravado/exento para PTU y Aguinaldo ─────────
-        // Equivalente a checar() Case 5 (Aguinaldo) / Case 6 (PTU) de VB6:
-        //   - El usuario teclea el TOTAL bruto del concepto en "Otras".
-        //   - Si chkBoxCE está marcado y txtCE trae un tope válido (equivalente
-        //     a Text3/"exento" en VB6), se reparte: exento = Min(bruto, tope),
-        //     gravado = bruto - exento.
-        //   - "Otras" queda con el gravado (lo que se ve en pantalla, igual que
-        //     VB6 sobreescribe la columna 5/6 con dato_sal) y "PercExenta" con
-        //     el exento aplicado (columna 10 en VB6).
-        // Solo aplica para PTU/Aguinaldo (ver EsMotivoPtuOAguinaldo); para
-        // cualquier otro motivo el valor capturado pasa tal cual, sin repartir.
-        private void AplicarRepartoExentoEspecial(DataGridViewRow row)
-        {
-            if (!rdiobtnEspecial.Checked) return;
-            if (!chkBoxCE.Checked) return;
-
-            string motivo = cbMotivo.SelectedItem?.ToString() ?? "";
-            if (!ConstantesNomina.EsMotivoPtuOAguinaldo(motivo)) return;
-
-            if (!decimal.TryParse(txtCE.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal montoExento) || montoExento <= 0m)
-                return;
-
-            decimal totalCapturado = GetDecimalSeguro(row, "Otras");
-            if (totalCapturado <= 0m) return;
-
-            decimal exentoAplicado = Math.Min(totalCapturado, montoExento);
-            decimal gravado = totalCapturado - exentoAplicado;
-
-            // 2 decimales: PTU/Aguinaldo conservan centavos (a diferencia del
-            // resto de "Otras", que se redondea a pesos enteros — ver
-            // ServicioCalculoNomina.CalcularNomina).
-            row.Cells["Otras"].Value = gravado.ToString("N2", CultureInfo.InvariantCulture);
-            row.Cells["PercExenta"].Value = exentoAplicado.ToString("N2", CultureInfo.InvariantCulture);
         }
 
         private void dgvMostrarPersonal_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
@@ -624,7 +871,7 @@ namespace NOMINA_2025
                 : $"Nómina Especial — {texto}";
 
             if (!string.IsNullOrWhiteSpace(texto))
-                AjustarColumnasParaTipoNomina(texto);
+                AjustarColumnasParaTipoNomina(texto, tipoForzado: TipoNominaCaptura.Otra);
         }
 
         // ── Carga de datos externos ───────────────────────────────────────
@@ -643,6 +890,11 @@ namespace NOMINA_2025
                 string dir = Path.GetDirectoryName(rutaArchivo) ?? "";
                 var nombres = LeerNombresDesdePersonal(Path.Combine(dir, "personal.dno"));
                 var cuentas = LeerBanamexDesdeArchivo(Path.Combine(dir, "bnxcla.dno"));
+                string nomArch = Path.GetFileNameWithoutExtension(rutaArchivo).ToUpper();
+                var tipoNom = PerfilColumnasNomina.Clasificar(nomArch);
+                bool esSeparacion = PerfilColumnasNomina.EsSeparacion(tipoNom);
+                // Offset 40 = campo 5 (.hstri) del primer registro: marca de formato nuevo.
+                bool separacionNueva = esSeparacion && raw.Length >= REC && BitConverter.ToInt64(raw, 5 * 8) == PerfilColumnasNomina.MarcaSeparacion2026Raw;
 
                 long ReadI64(int offset) => offset + 8 <= raw.Length ? BitConverter.ToInt64(raw, offset) : 0L;
 
@@ -653,31 +905,47 @@ namespace NOMINA_2025
                     for (int j = 0; j < 24; j++)
                         vals[j] = ReadI64(baseOff + j * 8);
 
+                    // En formato nuevo, .hstri (idx 5) es la MARCA, no un importe.
+                    if (separacionNueva) vals[5] = 0;
+
                     if (vals.All(v => v == 0)) continue;
 
                     decimal D(int idx) => vals[idx] / 10_000m;
 
+                    decimal dias = D(0);
+                    decimal bonoSep = D(1);                       // .hsnor
+                    decimal ispt = D(7), crdsal = D(8), imss = D(9);
                     decimal sueldo = D(10);
                     decimal hs_nor = D(11), hs_dbl = D(12), hs_tri = D(13);
-                    decimal viaticos = D(14);
-                    decimal pvac = D(15);
-                    decimal otras = D(16);
-                    decimal aguin = D(17), ptu = D(18);
-                    decimal exentos = D(19);
-                    decimal ispt = D(7), crdsal = D(8), imss = D(9);
+                    decimal viaticos = D(14), pvac = D(15), otras = D(16);
+                    decimal aguin = D(17), ptu = D(18), exentos = D(19);
                     decimal prestamos = D(20), fonacot = D(21);
                     decimal telefono = D(22), otraded = D(23);
-                    decimal dias = D(0);
 
-                    string nomArch = Path.GetFileNameWithoutExtension(rutaArchivo).ToUpper();
+                    decimal gNor, gDbl, gTri, gOF, otrasDisplay, totIngr;
 
-                    if (nomArch.StartsWith("PRE"))
-                    { hs_tri = viaticos; viaticos = 0; }
+                    if (separacionNueva)
+                    {
+                        // Mapeo de GridANomina (VB6): Comp=hs_nor, Agui=aguin, Antig=hs_dbl,
+                        // Indem=hs_tri, SdoVac=viaticos, Bono=hsnor, PV=pvac
+                        gNor = tipoNom == TipoNominaCaptura.Finiquito ? viaticos : hs_nor;
+                        gDbl = aguin;
+                        gTri = hs_dbl;
+                        gOF = tipoNom == TipoNominaCaptura.Finiquito ? bonoSep : hs_tri;
+                        otrasDisplay = otras;
+                        // En formato nuevo la exenta NO se suma (igual que carganom de VB6).
+                        totIngr = sueldo + gNor + gDbl + gTri + gOF + pvac + otras;
+                    }
+                    else
+                    {
+                        // Comportamiento original: ordinarias, especiales y separación legacy.
+                        gNor = hs_nor; gDbl = hs_dbl; gTri = hs_tri; gOF = viaticos;
+                        if (nomArch.StartsWith("PRE") && tipoNom != TipoNominaCaptura.Bono) { gTri = viaticos; gOF = 0m; }
 
-                    decimal otrasTotal = otras + aguin + ptu;
-                    decimal otrasDisplay = nomArch.StartsWith("PTU") ? ptu : nomArch.StartsWith("AGUIN") ? aguin : otrasTotal;
-
-                    decimal totIngr = sueldo + hs_nor + hs_dbl + hs_tri + viaticos + pvac + otrasTotal + exentos;
+                        decimal otrasTotal = otras + aguin + ptu + (esSeparacion ? bonoSep : 0m);
+                        otrasDisplay = nomArch.StartsWith("PTU") ? ptu : nomArch.StartsWith("AGUIN") ? aguin : otrasTotal;
+                        totIngr = sueldo + gNor + gDbl + gTri + gOF + pvac + otrasTotal + exentos;
+                    }
                     decimal isrNETO = Math.Max(0m, ispt - crdsal);
                     decimal totDeduc = isrNETO + imss + prestamos + fonacot + telefono + otraded;
                     decimal NETO = totIngr - totDeduc;
@@ -688,12 +956,12 @@ namespace NOMINA_2025
                     int rowIdx = dgvMostrarPersonal.Rows.Add();
                     var row = dgvMostrarPersonal.Rows[rowIdx];
 
-                    SetRow(row, i + 1, nombre, (int)dias, sueldo, hs_nor, hs_dbl, hs_tri, viaticos, pvac, otrasDisplay, exentos, totIngr, ispt, crdsal, imss, prestamos, fonacot, telefono, otraded, totDeduc, NETO, banamex);
+                    SetRow(row, i + 1, nombre, (int)dias, sueldo, gNor, gDbl, gTri, gOF, pvac, otrasDisplay, exentos, totIngr, ispt, crdsal, imss, prestamos, fonacot, telefono, otraded, totDeduc, NETO, banamex);
                 }
 
                 dgvMostrarPersonal.ResumeLayout();
                 ActualizarLblDatosPorNombre(Path.GetFileNameWithoutExtension(rutaArchivo));
-                AjustarColumnasParaTipoNomina(Path.GetFileNameWithoutExtension(rutaArchivo));
+                AjustarColumnasParaTipoNomina(Path.GetFileNameWithoutExtension(rutaArchivo), separacionLegacy: esSeparacion && !separacionNueva);
                 AgregarFilaTotales();
                 AplicarModoSoloLectura();
             }
@@ -712,13 +980,49 @@ namespace NOMINA_2025
 
                 dgvMostrarPersonal.Rows.Clear();
                 dgvMostrarPersonal.SuspendLayout();
+
                 string nomArch = Path.GetFileNameWithoutExtension(rutaArchivo).ToUpper();
 
-                bool esFiniquito = nomArch.StartsWith("FINI", StringComparison.OrdinalIgnoreCase);
-                bool esLiquidacion = nomArch.StartsWith("LIQ", StringComparison.OrdinalIgnoreCase);
+                // Metadatos del sobre; los archivos anteriores no los traen y se deduce por nombre.
+                int formato = 1;
+                TipoNominaCaptura tipo = PerfilColumnasNomina.Clasificar(nomArch);
+                try
+                {
+                    var sobre = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(rutaArchivo, Encoding.UTF8));
+                    formato = sobre.Value<int?>("FormatoColumnas") ?? 1;
+                    if (Enum.TryParse(sobre.Value<string>("TipoCFDI"), out TipoNominaCaptura tEnv)) tipo = tEnv;
+                }
+                catch { }
+
+                bool sep = PerfilColumnasNomina.EsSeparacion(tipo);
+                bool sepNueva = sep && formato >= 2;
 
                 foreach (var item in datos)
                 {
+                    decimal gNor, gDbl, gTri, gOF, otrasDisplay;
+
+                    if (sepNueva)
+                    {
+                        gNor = tipo == TipoNominaCaptura.Finiquito ? item.SueldoVacaciones : item.Compensaciones;
+                        gDbl = item.Aguinaldo;
+                        gTri = item.PrimaAntiguedad;
+                        gOF = tipo == TipoNominaCaptura.Finiquito ? item.Bono : item.Indemnizacion;
+                        otrasDisplay = item.Otras;
+                    }
+                    else if (sep)   // C# anterior (formato 1)
+                    {
+                        gNor = item.Compensaciones;
+                        gDbl = item.PrimaAntiguedad;
+                        gTri = item.Indemnizacion;
+                        gOF = item.SueldoVacaciones;
+                        otrasDisplay = item.Otras;
+                    }
+                    else
+                    {
+                        gNor = item.hsNorm; gDbl = item.hsDobles; gTri = item.hsTriples; gOF = item.OF;
+                        otrasDisplay = tipo == TipoNominaCaptura.PTU ? item.PTU : tipo == TipoNominaCaptura.Aguinaldo ? item.Aguinaldo : item.Otras;
+                    }
+
                     int rowIndex = dgvMostrarPersonal.Rows.Add();
                     var row = dgvMostrarPersonal.Rows[rowIndex];
 
@@ -726,31 +1030,12 @@ namespace NOMINA_2025
                     row.Cells["NombreEmpleado"].Value = item.Nombre;
                     row.Cells["DiasTrabajados"].Value = item.DiasT;
                     row.Cells["Salario"].Value = item.Sueldo.ToString("N2");
-                    row.Cells["hsNorm"].Value = (esFiniquito || esLiquidacion ? item.Compensaciones : item.hsNorm) .ToString("F2");
-                    row.Cells["hsDobles"].Value = (esFiniquito || esLiquidacion ? item.PrimaAntiguedad : item.hsDobles).ToString("F2");
-                    row.Cells["hsTriples"].Value = (esFiniquito || esLiquidacion ? item.Indemnizacion : item.hsTriples).ToString("F2");
-                    row.Cells["OF"].Value = (esFiniquito || esLiquidacion ? item.SueldoVacaciones : item.OF).ToString("F2");
+                    row.Cells["hsNorm"].Value = gNor.ToString("F2");
+                    row.Cells["hsDobles"].Value = gDbl.ToString("F2");
+                    row.Cells["hsTriples"].Value = gTri.ToString("F2");
+                    row.Cells["OF"].Value = gOF.ToString("F2");
                     row.Cells["PVacac"].Value = item.Pvacacional.ToString("F2");
-                    decimal otrasDisplay = item.Otras;
-                    if (nomArch.StartsWith("PTU"))
-                    {
-                        otrasDisplay = item.PTU;
-                    }
-                    else if (nomArch.StartsWith("AGUI"))                    
-                    {
-                        otrasDisplay = item.Aguinaldo;
-                    }
-                    else if (nomArch.StartsWith("BONO"))
-                    {
-                        otrasDisplay = item.Bono;
-                    }
-                    else
-                    {
-                        otrasDisplay = item.Otras;
-                    }
-
-                    row.Cells["Otras"].Value =
-                        otrasDisplay.ToString("N2");
+                    row.Cells["Otras"].Value = otrasDisplay.ToString("N2");
                     row.Cells["PercExenta"].Value = item.PercExenta.ToString("F2");
                     row.Cells["TotIngr"].Value = item.TotalIngr.ToString("N2");
                     row.Cells["Ispt"].Value = item.ISTP.ToString("N2");
@@ -768,7 +1053,7 @@ namespace NOMINA_2025
                 dgvMostrarPersonal.ResumeLayout();
 
                 ActualizarLblDatosPorNombre(Path.GetFileNameWithoutExtension(rutaArchivo));
-                AjustarColumnasParaTipoNomina(Path.GetFileNameWithoutExtension(rutaArchivo));
+                AjustarColumnasParaTipoNomina(Path.GetFileNameWithoutExtension(rutaArchivo), separacionLegacy: sep && !sepNueva, tipoForzado: tipo);
                 AgregarFilaTotales();
                 AplicarModoSoloLectura();
             }
@@ -899,12 +1184,28 @@ namespace NOMINA_2025
                         MessageBox.Show("El nombre solo puede contener letras y guiones bajos.", "Nombre Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    fileName = $"{nombreOtro}.json";
+
+                    string conceptoOtro = nombreOtro.Replace("_", "");
+                    if (conceptoOtro.Length < 3)
+                    {
+                        MessageBox.Show("El nombre debe tener al menos 3 letras.", "Nombre Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // Premios/bonos y los demás conceptos con motivo propio no se capturan como "Otros".
+                    if (PerfilColumnasNomina.Clasificar(conceptoOtro) != TipoNominaCaptura.Otra)
+                    {
+                        MessageBox.Show("Ese concepto tiene su propio motivo en la lista (los premios se capturan como BONO).\n\nSelecciónalo en lugar de usar \"Otros...\".",
+                            "Usar el motivo correspondiente", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    fileName = PerfilColumnasNomina.SiguienteNombreEspecial(RutaTrabajo, conceptoOtro, mesParaArchivo, anio) + ".json";
                     motivoRegistro = nombreOtro;
                 }
                 else
                 {
-                    fileName = $"{motivo.Replace(" ", "").ToUpper()}.json";
+                    fileName = PerfilColumnasNomina.SiguienteNombreEspecial(RutaTrabajo, PerfilColumnasNomina.NombreArchivoMotivo(motivo), mesParaArchivo, anio) + ".json";
                     motivoRegistro = motivo;
                 }
 
@@ -975,12 +1276,14 @@ namespace NOMINA_2025
                     if (!tieneAlgo) continue;
                 }
 
-                string motivo = cbMotivo.SelectedItem?.ToString()?.ToUpper() ?? "";
-                bool esPTU = motivo.StartsWith("PTU");
-                bool esAguinaldo = motivo.StartsWith("AGUI");
-                bool esBono = motivo.StartsWith("PREMIO");
-                bool esFiniquito = motivo.StartsWith("FINI");
-                bool esLiquidacion = motivo.StartsWith("LIQ");
+                string motivo = cbMotivo.SelectedItem?.ToString() ?? "";
+                var tipoCap = PerfilColumnasNomina.Clasificar(motivo);
+                bool esPTU = tipoCap == TipoNominaCaptura.PTU;
+                bool esAguinaldo = tipoCap == TipoNominaCaptura.Aguinaldo;
+                bool esBono = tipoCap == TipoNominaCaptura.Bono;
+                bool esFiniquito = tipoCap == TipoNominaCaptura.Finiquito;
+                bool esLiquidacion = tipoCap == TipoNominaCaptura.Liquidacion;
+                bool esSep = esFiniquito || esLiquidacion;
 
                 listaJson.Add(new NominaJSON
                 {
@@ -988,19 +1291,19 @@ namespace NOMINA_2025
                     Nombre = row.Cells["NombreEmpleado"].Value?.ToString() ?? "",
                     DiasT = GetInt(row, "DiasTrabajados"),
                     Sueldo = GetDecimal(row, "Salario"),
-                    hsNorm = GetDecimal(row, "hsNorm"),
-                    hsDobles = GetDecimal(row, "hsDobles"),
-                    hsTriples = GetDecimal(row, "hsTriples"),
-                    OF = GetDecimal(row, "OF"),
+                    hsNorm = esSep ? 0m : GetDecimal(row, "hsNorm"),
+                    hsDobles = esSep ? 0m : GetDecimal(row, "hsDobles"),
+                    hsTriples = esSep ? 0m : GetDecimal(row, "hsTriples"),
+                    OF = esSep ? 0m : GetDecimal(row, "OF"),
                     Pvacacional = GetDecimal(row, "PVacac"),
                     Otras = GetDecimal(row, "Otras"),
                     PTU = esPTU ? GetDecimal(row, "Otras") : 0m,
-                    Aguinaldo = esAguinaldo ? GetDecimal(row, "Otras") : 0m,
-                    Bono = esBono ? GetDecimal(row, "OF") : 0m,
-                    Compensaciones = (esFiniquito || esLiquidacion) ? GetDecimal(row, "hsNorm") : 0m,
-                    PrimaAntiguedad = (esFiniquito || esLiquidacion) ? GetDecimal(row, "hsDobles") : 0m,
-                    Indemnizacion = (esFiniquito || esLiquidacion) ? GetDecimal(row, "hsTriples") : 0m,
-                    SueldoVacaciones = (esFiniquito || esLiquidacion) ? GetDecimal(row, "OF") : 0m,
+                    Aguinaldo = esAguinaldo ? GetDecimal(row, "Otras") : esSep ? GetDecimal(row, "hsDobles") : 0m,
+                    Bono = (esBono || esFiniquito) ? GetDecimal(row, "OF") : 0m,
+                    Compensaciones = esLiquidacion ? GetDecimal(row, "hsNorm") : 0m,
+                    PrimaAntiguedad = esSep ? GetDecimal(row, "hsTriples") : 0m,
+                    Indemnizacion = esLiquidacion ? GetDecimal(row, "OF") : 0m,
+                    SueldoVacaciones = esFiniquito ? GetDecimal(row, "hsNorm") : 0m,
                     PercExenta = GetDecimal(row, "PercExenta"),
                     TotalIngr = GetDecimal(row, "TotIngr"),
                     ISTP = GetDecimal(row, "Ispt"),
@@ -1033,7 +1336,12 @@ namespace NOMINA_2025
                 Hmac = Convert.ToBase64String(hmacBytes),
                 FechaGeneracion = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 UsuarioModificacion = Environment.UserName,
-                Quincena = rdiobtnPrimera.Checked ? "Primera" : "Segunda"
+                Quincena = rdiobtnPrimera.Checked ? "Primera" : "Segunda",
+                FormatoColumnas = 2,
+                TipoCFDI = PerfilColumnasNomina.Clasificar(rdiobtnEspecial.Checked ? (cbMotivo.SelectedItem?.ToString() ?? "") : "").ToString(),
+                Motivo = motivoRegistro ?? "",
+                Mes = mesParaArchivo,
+                Anio = anio
             };
 
             try
@@ -1133,6 +1441,7 @@ namespace NOMINA_2025
                     MotivoEspecial = rdiobtnEspecial.Checked ? (cbMotivo.SelectedItem?.ToString() ?? "") : "",
                     DiasTrabajados = diasTrabajados,
                     SalarioDiario = empleado.SalarioDiario,
+                    SalarioCapturadoEspecial = GetDecimal(row, "Salario"),
                     HorasNormales = GetDecimal(row, "hsNorm"),
                     HorasDobles = GetDecimal(row, "hsDobles"),
                     HorasTriples = GetDecimal(row, "hsTriples"),
@@ -1140,6 +1449,8 @@ namespace NOMINA_2025
                     PrimaVacacional = GetDecimal(row, "PVacac"),
                     OtrasPercepciones = otrasCalculadas,
                     PercepcionExenta = GetDecimal(row, "PercExenta"),
+                    // En el formato nuevo, el concepto contiene el bruto completo y la exenta es un desglose.
+                    ExentoIncluidoEnConceptos = true,
                     Prestamos = GetDecimal(row, "Prestamos"),
                     FONACOT = GetDecimal(row, "FONACOT"),
                     PensionAlimenticia = GetDecimal(row, "PensionAliment"),
@@ -1239,6 +1550,7 @@ namespace NOMINA_2025
                     MotivoEspecial = rdiobtnEspecial.Checked ? (cbMotivo.SelectedItem?.ToString() ?? "") : "",
                     DiasTrabajados = diasTrabajados,
                     SalarioDiario = empleado.SalarioDiario,
+                    SalarioCapturadoEspecial = GetDecimal(row, "Salario"),
                     HorasNormales = GetDecimal(row, "hsNorm"),
                     HorasDobles = GetDecimal(row, "hsDobles"),
                     HorasTriples = GetDecimal(row, "hsTriples"),
@@ -1246,6 +1558,7 @@ namespace NOMINA_2025
                     PrimaVacacional = GetDecimal(row, "PVacac"),
                     OtrasPercepciones = otrasCalculadas,
                     PercepcionExenta = GetDecimal(row, "PercExenta"),
+                    ExentoIncluidoEnConceptos = true,
                     Prestamos = GetDecimal(row, "Prestamos"),
                     FONACOT = GetDecimal(row, "FONACOT"),
                     PensionAlimenticia = GetDecimal(row, "PensionAliment"),
@@ -1257,13 +1570,82 @@ namespace NOMINA_2025
                 var resultado = _servicioCalculo.CalcularNomina(empleado, datosCapturados, fechaCorteNomina);
                 _subsidioCausadoPorEmpleado[idEmpleado] = resultado.SubsidioCausado;
 
-                row.Cells["Salario"].Value = resultado.SalarioPeriodo.ToString("N2");
-                row.Cells["TotIngr"].Value = resultado.TotalIngresos.ToString("N2");
-                row.Cells["Ispt"].Value = resultado.ISR.ToString("N2");
-                row.Cells["SubEmp"].Value = resultado.Subsidio.ToString("N2");
-                row.Cells["IMSS"].Value = resultado.IMSS.ToString("N2");
-                row.Cells["TotDeduc"].Value = resultado.TotalDeducciones.ToString("N2");
-                row.Cells["NETO"].Value = resultado.Neto.ToString("N2");
+                // ================================================
+                // IMPORTES DEL PERIODO
+                // ================================================
+
+                row.Cells["Salario"].Value =
+                    resultado.SalarioPeriodo.ToString("N2");
+
+                row.Cells["TotIngr"].Value =
+                    resultado.TotalIngresos.ToString("N2");
+
+                // ================================================
+                // RESPETAR RETENCIONES MANUALES
+                // ================================================
+
+                bool isrManual = _fiscalManualOverride.Contains(
+                    $"{idEmpleado}:Ispt");
+
+                bool subsidioManual = _fiscalManualOverride.Contains(
+                    $"{idEmpleado}:SubEmp");
+
+                bool imssManual = _fiscalManualOverride.Contains(
+                    $"{idEmpleado}:IMSS");
+
+                // Solamente actualizar el campo fiscal si
+                // NO fue fijado manualmente para este empleado.
+
+                if (!isrManual)
+                {
+                    row.Cells["Ispt"].Value =
+                        resultado.ISR.ToString("N2");
+                }
+
+                if (!subsidioManual)
+                {
+                    row.Cells["SubEmp"].Value =
+                        resultado.Subsidio.ToString("N2");
+                }
+
+                if (!imssManual)
+                {
+                    row.Cells["IMSS"].Value =
+                        resultado.IMSS.ToString("N2");
+                }
+
+                // ================================================
+                // TOTAL DE DEDUCCIONES Y NETO
+                // ================================================
+
+                // Cuando existe alguna retención manual, los
+                // totales deben utilizar lo que realmente quedó
+                // en las celdas, no los impuestos automáticos.
+
+                if (isrManual || subsidioManual || imssManual)
+                {
+                    decimal ingresosFinales = GetDecimal(row, "TotIngr");
+
+                    decimal deduccionesFinales = Math.Round(
+                        GetDecimal(row, "Ispt") +
+                        GetDecimal(row, "SubEmp") +
+                        GetDecimal(row, "IMSS") +
+                        GetDecimal(row, "Prestamos") +
+                        GetDecimal(row, "FONACOT") +
+                        GetDecimal(row, "PensionAliment") +
+                        GetDecimal(row, "INFONAVIT"),
+                        2);
+
+                    decimal netoFinal = Math.Round(ingresosFinales - deduccionesFinales, 2);
+
+                    row.Cells["TotDeduc"].Value = deduccionesFinales.ToString("N2");
+                    row.Cells["NETO"].Value = netoFinal.ToString("N2");
+                }
+                else
+                {
+                    row.Cells["TotDeduc"].Value = resultado.TotalDeducciones.ToString("N2");
+                    row.Cells["NETO"].Value = resultado.Neto.ToString("N2");
+                }
 
                 dgvMostrarPersonal.Refresh();
             }
@@ -1312,11 +1694,14 @@ namespace NOMINA_2025
         // ── Carga de empleados en grid ────────────────────────────────────
         private void CargarEmpleadosEnGrid()
         {
+            // Una nueva captura comienza sin excepciones individuales de la captura anterior.
+            _exentaManualPorEmpleado.Clear();
             dgvMostrarPersonal.Rows.Clear();
 
             bool esEspecial = rdiobtnEspecial.Checked;
 
-            var fuente = esEspecial ? _todosEmpleadosRUEP?.Where(emp => string.IsNullOrWhiteSpace(emp.FechaBaja) || ObtenerAnioFecha(emp.FechaBaja) >= _datosEmpresa.ano_fiscal).ToList() : _empleadosActivos;
+            var fuente = esEspecial ? _todosEmpleadosRUEP?.Where(emp => string.IsNullOrWhiteSpace(emp.FechaBaja) || ObtenerAnioFecha(emp.FechaBaja) >= _datosEmpresa.ano_fiscal)
+                .ToList() : _empleadosActivos;
 
             if (fuente == null || !fuente.Any()) return;
 
@@ -1346,9 +1731,11 @@ namespace NOMINA_2025
                     if (!DateTime.TryParseExact(emp.FechaAlta, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fechaAlta))
                         continue;
 
-                    if (fechaAlta > finQ) continue;
+                    if (fechaAlta > finQ)
+                        continue;
 
-                    if (!string.IsNullOrWhiteSpace(emp.FechaBaja) && DateTime.TryParseExact(emp.FechaBaja, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fechaBaja) && fechaBaja < inicioQ)
+                    if (!string.IsNullOrWhiteSpace(emp.FechaBaja) && DateTime.TryParseExact(emp.FechaBaja, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                        out DateTime fechaBaja) && fechaBaja < inicioQ)
                         continue;
 
                     DateTime inicioReal = fechaAlta > inicioQ ? fechaAlta : inicioQ;
@@ -1401,8 +1788,8 @@ namespace NOMINA_2025
                 _todosEmpleadosRUEP = _personalService.ObtenerTodos().Where(emp => !string.IsNullOrWhiteSpace(emp.Nombre) && !string.IsNullOrWhiteSpace(emp.ApellidoP)).OrderBy(emp => emp.ApellidoP)
                     .ThenBy(emp => emp.ApellidoM).ThenBy(emp => emp.Nombre).ToList();
 
-                _empleadosActivos = _personalService.ObtenerTodos().Where(emp => !string.IsNullOrWhiteSpace(emp.Nombre) && !string.IsNullOrWhiteSpace(emp.ApellidoP) && EsVigenteEnPeriodo(emp.FechaBaja, AnioEmpresa))
-                    .OrderBy(emp => emp.ApellidoP).ThenBy(emp => emp.ApellidoM).ThenBy(emp => emp.Nombre).ToList();
+                _empleadosActivos = _personalService.ObtenerTodos().Where(emp => !string.IsNullOrWhiteSpace(emp.Nombre) && !string.IsNullOrWhiteSpace(emp.ApellidoP) &&
+                EsVigenteEnPeriodo(emp.FechaBaja, AnioEmpresa)).OrderBy(emp => emp.ApellidoP).ThenBy(emp => emp.ApellidoM).ThenBy(emp => emp.Nombre).ToList();
 
                 InicializarServicioCalculo();
                 CargarEmpleadosEnGrid();
@@ -1802,13 +2189,8 @@ namespace NOMINA_2025
         }
 
         // ── Columnas por tipo de nómina ───────────────────────────────────
-        private void AjustarColumnasParaTipoNomina(string nombreSinExtension)
+        private void AjustarColumnasParaTipoNomina(string nombreSinExtension, bool separacionLegacy = false, TipoNominaCaptura? tipoForzado = null)
         {
-            // ============================================================
-            // ENCABEZADOS POR DEFECTO
-            // Se conservan para Nómina Normal y para las Nóminas Especiales
-            // que no tengan un encabezado específico.
-            // ============================================================
             SetColHeader("hsNorm", "Hs. Norm.");
             SetColHeader("hsDobles", "Hs. Dobles");
             SetColHeader("hsTriples", "Hs. Triples");
@@ -1820,84 +2202,88 @@ namespace NOMINA_2025
             SetColHeader("SubEmp", "Subsidio");
 
             string nombre = (nombreSinExtension ?? "").Trim();
+            TipoNominaCaptura tipo = tipoForzado ?? PerfilColumnasNomina.Clasificar(nombre);
 
-            // ============================================================
-            // SI ES NÓMINA NORMAL
-            // ============================================================
-            if (Regex.IsMatch(nombre.ToUpper(), @"^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)(1|2)\d{4}$"))
+            switch (tipo)
             {
-                return;
+                case TipoNominaCaptura.Ordinaria:
+                    break;
+
+                case TipoNominaCaptura.Liquidacion:
+                case TipoNominaCaptura.Finiquito:
+                    foreach (var kv in PerfilColumnasNomina.EncabezadosSeparacion(tipo, separacionLegacy))
+                        SetColHeader(kv.Key, kv.Value);
+                    AjustarAnchoColumnasEncabezados();
+                    break;
+
+                case TipoNominaCaptura.Bono:
+                    SetColHeader("OF", "Bono");
+                    break;
+
+                case TipoNominaCaptura.PTU:
+                    SetColHeader("Otras", "P.T.U.");
+                    break;
+
+                case TipoNominaCaptura.Aguinaldo:
+                    SetColHeader("Otras", "Aguinaldo");
+                    break;
+
+                default: // Otra: Prima Vacacional, OTROS..., archivos "PRE*" antiguos
+                    string n = PerfilColumnasNomina.Normalizar(nombre);
+                    if (n.StartsWith("PRE"))
+                    {
+                        SetColHeader("hsTriples", "Viáticos");
+                        SetColHeader("OF", "—");
+                    }
+                    else if (n.Contains("VACAC"))
+                        SetColHeader("Otras", "P. Vacacional");
+                    else if (n.Length > 0 && n != "OTROS")
+                        SetColHeader("Otras", nombre.Length > 11 ? nombre[..11] : nombre);
+                    break;
             }
 
-            // ============================================================
-            // NÓMINAS ESPECIALES
-            // ============================================================
+            AplicarColumnasVisiblesPorTipo(tipo);
+        }
 
-            // Finiquito / Liquidación
-            // ------------------------------------------------------------
-            // HS.NORM.   -> Compensaciones
-            // HS.DOBLES   -> P. Antigüedad
-            // HS.TRIPLES  -> Indemnizaciones
-            // O.F.        -> Sueldo Vacaciones
-            if (nombre.Equals("Finiquito", StringComparison.OrdinalIgnoreCase) || nombre.Equals("Liquidación", StringComparison.OrdinalIgnoreCase) ||
-                nombre.Equals("Liquidacion", StringComparison.OrdinalIgnoreCase))
+        // Oculta las columnas de captura que el tipo no usa (y bloquea que el menú las vuelva a mostrar).
+        private void AplicarColumnasVisiblesPorTipo(TipoNominaCaptura tipo)
+        {
+            _tipoColumnasActual = tipo;
+
+            foreach (string col in _columnasBloqueadasPorTipo)
+                if (dgvMostrarPersonal.Columns.Contains(col))
+                    dgvMostrarPersonal.Columns[col].Visible = true;
+            _columnasBloqueadasPorTipo.Clear();
+
+            var visibles = PerfilColumnasNomina.ColumnasConcepto(tipo);
+            foreach (string col in _columnasDeConcepto)
             {
-                SetColHeader("hsNorm", "Compensaciones");
-                SetColHeader("hsDobles", "P. Antigüedad");
-                SetColHeader("hsTriples", "Indemnizaciones");
-                SetColHeader("OF", "Sueldo Vacaciones");
+                if (!dgvMostrarPersonal.Columns.Contains(col) || visibles.Contains(col)) continue;
+                if (ColumnaTieneValores(col)) continue;   // nunca ocultar datos reales (reapertura de archivos)
 
-                AjustarAnchoColumnasEncabezados();
-
-                return;
+                dgvMostrarPersonal.Columns[col].Visible = false;
+                _columnasBloqueadasPorTipo.Add(col);
             }
 
-            // Premio de Puntualidad
-            // ------------------------------------------------------------
-            // La columna que actualmente aparece sin encabezado deberá
-            // mostrar "Bono".
-            if (nombre.Equals("Premio de Puntualidad", StringComparison.OrdinalIgnoreCase))
-            {
-                SetColHeader("OF", "Bono");
+            SincronizarMenuColumnas();
+        }
 
-                return;
-            }
+        private bool ColumnaTieneValores(string col) => dgvMostrarPersonal.Rows.Cast<DataGridViewRow>().Any(r => !r.IsNewRow && r.Tag?.ToString() != "Totales" && GetDecimalSeguro(r, col) != 0m);
+        private bool HayCapturaEnGrid() => dgvMostrarPersonal.Rows.Cast<DataGridViewRow>().Any(TieneMovimientoNominaEspecial);
 
-            // ============================================================
-            // RESTO DE NÓMINAS ESPECIALES
-            // Se conserva el comportamiento que ya tenía el programa.
-            // ============================================================
-
-            if (nombre.StartsWith("PTU", StringComparison.OrdinalIgnoreCase))
+        private void SincronizarMenuColumnas()
+        {
+            foreach (ToolStripItem it in tsMostrarColumna.DropDownItems)
             {
-                SetColHeader("Otras", "P.T.U.");
-                SetColHeader("PVacac", "—");
-            }
-            else if (nombre.StartsWith("AGUIN", StringComparison.OrdinalIgnoreCase))
-            {
-                SetColHeader("Otras", "Aguinaldo");
-                SetColHeader("PVacac", "—");
-            }
-            else if (nombre.StartsWith("PRE", StringComparison.OrdinalIgnoreCase))
-            {
-                SetColHeader("hsTriples", "Viáticos");
-                SetColHeader("OF", "—");
-            }
-            else if (nombre.Contains("VACAC", StringComparison.OrdinalIgnoreCase))
-            {
-                SetColHeader("Otras", "P. Vacacional");
-                SetColHeader("PVacac", "—");
-            }
-            else if (!string.IsNullOrWhiteSpace(nombre) &&
-                     !nombre.Equals("OTROS", StringComparison.OrdinalIgnoreCase))
-            {
-                string etiqueta = nombre.Length > 11
-                    ? nombre[..11]
-                    : nombre;
-
-                SetColHeader("Otras", etiqueta);
+                if (it is ToolStripMenuItem mi && mi.Tag is string col && dgvMostrarPersonal.Columns.Contains(col))
+                {
+                    mi.Enabled = !_columnasBloqueadasPorTipo.Contains(col);
+                    mi.Checked = dgvMostrarPersonal.Columns[col].Visible;
+                }
             }
         }
+
+        private bool ExentoIncluidoEnConceptosActual() => rdiobtnEspecial.Checked && PerfilColumnasNomina.EsSeparacion(PerfilColumnasNomina.Clasificar(cbMotivo.SelectedItem?.ToString() ?? ""));
 
         private void SetColHeader(string colName, string headerText)
         {
@@ -2051,6 +2437,10 @@ namespace NOMINA_2025
                 string mesFull = mesNum > 0 ? dtfi.GetMonthName(mesNum).ToUpper() : mesAbrev;
 
                 lblDatos.Text = $"{(quincena == 1 ? "1ra" : "2da")} Nómina de {mesFull} del {year}";
+            }
+            else if (Regex.Match(nombre, @"^(?<n>\d{2,})(?<c>[A-Z]+?)(?<m>ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)(?<a>\d{4})$") is { Success: true } esp)
+            {
+                lblDatos.Text = $"Nómina Especial — {esp.Groups["c"].Value} · {esp.Groups["m"].Value} {esp.Groups["a"].Value} · No. {esp.Groups["n"].Value}";
             }
             else if (Regex.IsMatch(nombre, @"^[A-Z_]+$") && nombre.Length > 2)
             {
@@ -3281,6 +3671,68 @@ namespace NOMINA_2025
 
                 if (resultado == ResultadoPagoEspecial.Excedido)
                     _ = EmailService.NotificarPagoExcedidoAsync(Environment.MachineName, _datosEmpresa?.nombre ?? "EMPRESA", nombre);
+            }
+        }
+
+        private void chkBoxCE_Leave(object sender, EventArgs e)
+        {
+            if (!chkBoxCE.Checked)
+                return;
+
+            if (!TryObtenerExentaGlobal(out _))
+            {
+                MessageBox.Show("Introduce una cantidad exenta válida, mayor o igual a cero y con máximo dos decimales.", "Cantidad exenta inválida", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            AplicarExentaGlobal();
+        }
+
+        private void dgvMostrarPersonal_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            DataGridViewRow fila = dgvMostrarPersonal.Rows[e.RowIndex];
+
+            if (fila.IsNewRow || fila.Tag?.ToString() == "Totales")
+                return;
+
+            string columna = dgvMostrarPersonal.Columns[e.ColumnIndex].Name;
+
+            if (columna != "PercExenta")
+                return;
+
+            string texto = (e.FormattedValue?.ToString() ?? "").Trim();
+
+            // Dejar vacío significa quitar la excepción individual y recuperar la exenta global, si está habilitada.
+            if (string.IsNullOrWhiteSpace(texto))
+                return;
+
+            texto = texto.Replace("$", "").Trim();
+
+            bool esNumero = decimal.TryParse(texto, NumberStyles.Number, CultureInfo.GetCultureInfo("es-MX"), out decimal exenta);
+
+            if (!esNumero)
+            {
+                esNumero = decimal.TryParse(texto, NumberStyles.Number, CultureInfo.InvariantCulture, out exenta);
+            }
+
+            if (!esNumero || exenta < 0m || decimal.Round(exenta, 2) != exenta)
+            {
+                MessageBox.Show( "Introduce una percepción exenta válida, mayor o igual a cero y con máximo dos decimales.", "Percepción exenta inválida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                e.Cancel = true;
+                return;
+            }
+
+            decimal brutoAplicable = ObtenerBrutoAplicableExenta(fila);
+
+            if (exenta > brutoAplicable)
+            {
+                MessageBox.Show($"La exenta capturada (${exenta:N2}) " + $"supera el importe bruto aplicable " + $"(${brutoAplicable:N2}).\n\n" + "Corrige la cantidad antes de continuar.",
+                    "Percepción exenta excedida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                e.Cancel = true;
             }
         }
     }

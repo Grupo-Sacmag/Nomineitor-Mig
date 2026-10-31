@@ -370,35 +370,42 @@ namespace Nomina_2026_NET8
 
         public ResultadoNominaCompleto CalcularNomina(EmpleadoCompleto emp, DatosCapturados d, DateTime fechaCorteNomina)
         {
-            // 1. Salario del periodo
-            decimal salario = Math.Round(d.SalarioDiario * d.DiasTrabajados, 2);
+            // 1. Salario del periodo.           
+            // Nómina ordinaria: conservar el cálculo original de salario por días.
+            // Nómina especial: respetar el importe bruto capturado en la fila.
+            decimal salario = d.EsNominaEspecial ? Math.Round(d.SalarioCapturadoEspecial, 2, MidpointRounding.AwayFromZero) : Math.Round( d.SalarioDiario * d.DiasTrabajados, 2);
 
             // 1.b Horas normales
             decimal salarioHora = Math.Round(d.SalarioDiario / 8m, 4, MidpointRounding.AwayFromZero);
             decimal ingresoHorasNormales = !d.EsNominaEspecial ? Math.Round(d.HorasNormales * salarioHora, 2) : d.HorasNormales;   // ya viene en pesos cuando es especial
 
             // 2. Otras
-            // PTU/Aguinaldo (checar() Case 5/6 en VB6) conservan 2 decimales porque
-            // ya vienen repartidas gravado/exento contra un tope en pesos con centavos
-            // (ver AplicarRepartoExentoEspecial en FormCaptura). El resto de conceptos
-            // ("Otras" tarifa-por-día en nómina normal, o cualquier otro motivo especial
-            // tipo Liquidación/Finiquito/Bono) se sigue redondeando a pesos enteros,
-            // igual que siempre.
+            // PTU/Aguinaldo (checar() Case 5/6 en VB6) conservan 2 decimales porque ya vienen repartidas gravado/exento contra un tope en pesos con centavos
+            // (ver AplicarRepartoExentoEspecial en FormCaptura). El resto de conceptos ("Otras" tarifa-por-día en nómina normal, o cualquier otro motivo especial
+            // tipo Liquidación/Finiquito/Bono) se sigue redondeando a pesos enteros, igual que siempre.
             bool esPtuOAguinaldo = d.EsNominaEspecial && ConstantesNomina.EsMotivoPtuOAguinaldo(d.MotivoEspecial);
-            decimal otras = esPtuOAguinaldo
-                ? Math.Round(d.OtrasPercepciones, 2, MidpointRounding.AwayFromZero)
-                : Math.Round(d.OtrasPercepciones, 0, MidpointRounding.AwayFromZero);
+            
+            // Los importes capturados directamente en nóminas especiales conservan sus dos decimales.
+            // La nómina ordinaria conserva el redondeo de "Otras" que ya utilizaba el programa.
+            decimal otras = d.EsNominaEspecial ? Math.Round(d.OtrasPercepciones, 2, MidpointRounding.AwayFromZero) : Math.Round(d.OtrasPercepciones, 0, MidpointRounding.AwayFromZero);
 
             // 3. SDI para IMSS calculado desde la fila de nómina, como VB6
             decimal integrado = CalcularSalarioDiarioIntegradoIMSS(emp, d, fechaCorteNomina, salario, otras);
 
-            // 4. Total ingresos
-            decimal totalIngr = Math.Round(salario + d.HorasNormales + d.HorasDobles + d.HorasTriples + d.OF + d.PrimaVacacional + otras + d.PercepcionExenta, 2);
+            // 4. Total de ingresos:
+            // La percepción exenta ya forma parte de los conceptos brutos. NUNCA se suma de nuevo.
+            decimal totalIngr = Math.Round(salario + d.HorasNormales + d.HorasDobles + d.HorasTriples + d.OF + d.PrimaVacacional + otras, 2);
 
-            // 5. Ingreso gravable
-            decimal gravable = totalIngr - d.PercepcionExenta;
+            // 5. Verificar el desglose exento antes de obtener la base gravable.
+            if (d.PercepcionExenta < 0m || d.PercepcionExenta > totalIngr)
+            {
+                throw new InvalidOperationException("La percepción exenta debe ser mayor o igual a cero y no puede exceder el total de ingresos.");
+            }
 
-            // 6. ISR / Subsidio / IMSS
+            // 6. Ingreso gravable inicial.
+            decimal gravable = Math.Round(totalIngr - d.PercepcionExenta, 2);
+
+            // 7. ISR / Subsidio / IMSS
             decimal isrMostrado;
             decimal subsidioMostrado;
             decimal subsidioCausado;
@@ -430,7 +437,7 @@ namespace Nomina_2026_NET8
                 imss = _imssCalc.CalcularCuotaObrera(integrado, d.DiasTrabajados);
             }
 
-            // 7. Deducciones y neto
+            // 8. Deducciones y neto
             decimal deduc = Math.Round(isrMostrado + subsidioMostrado + imss + d.Prestamos + d.FONACOT + d.PensionAlimenticia + d.INFONAVIT, 2);
 
             decimal neto = Math.Round(totalIngr - deduc, 2);
@@ -490,17 +497,16 @@ namespace Nomina_2026_NET8
         public bool EsSegundaQuincena { get; set; }
         public bool EsNominaEspecial { get; set; }
 
-        /// <summary>
         /// Motivo de la nómina especial seleccionado en cbMotivo (p.ej. "PTU",
         /// "AGUINALDO", "LIQUIDACION"...). Vacío/null cuando EsNominaEspecial es false.
-        /// Se usa únicamente para decidir si "Otras" conserva 2 decimales (PTU/Aguinaldo,
-        /// ya repartidos gravado/exento) o se redondea a pesos enteros (cualquier otro
+        /// Se usa únicamente para decidir si "Otras" conserva 2 decimales (PTU/Aguinaldo, ya repartidos gravado/exento) o se redondea a pesos enteros (cualquier otro
         /// caso) — ver ConstantesNomina.EsMotivoPtuOAguinaldo.
-        /// </summary>
         public string MotivoEspecial { get; set; }
 
         public int DiasTrabajados { get; set; }
         public decimal SalarioDiario { get; set; }
+        // Importe bruto de la columna Salario. Se usa únicamente en nóminas especiales.
+        public decimal SalarioCapturadoEspecial { get; set; }
         public decimal HorasNormales { get; set; }
         public decimal HorasDobles { get; set; }
         public decimal HorasTriples { get; set; }
@@ -508,6 +514,8 @@ namespace Nomina_2026_NET8
         public decimal PrimaVacacional { get; set; }
         public decimal OtrasPercepciones { get; set; }
         public decimal PercepcionExenta { get; set; }
+        // true en Liquidación/Finiquito (formato 2026): PercepcionExenta es la parte exenta de los conceptos ya capturados, NO un importe adicional (igual que carganom de VB6).
+        public bool ExentoIncluidoEnConceptos { get; set; }
         public decimal Prestamos { get; set; }
         public decimal FONACOT { get; set; }
         public decimal PensionAlimenticia { get; set; }

@@ -19,6 +19,20 @@ namespace Nomina_2026_NET8
 
     public static class CapturaCfdiNominaVB6
     {
+        private static string ObtenerClaveRiesgoImss(string riesgoGuardado)
+        {
+            string valor = (riesgoGuardado ?? "").Trim();
+
+            // RUEP V9 guarda valores como: "1-Clase I", "2-Clase II", etc.
+            if (valor.Length > 0 && valor[0] >= '1' && valor[0] <= '5' && (valor.Length == 1 || valor[1] == '-' || char.IsWhiteSpace(valor[1])))
+            {
+                return valor[0].ToString();
+            }
+
+            // Mantener el valor predeterminado original cuando todavía no existe configuración.
+            return "1";
+        }
+
         public static DatosInicioCfdiNomina Capturar(ConfiguracionCfdiNomina config)
         {
             config ??= new ConfiguracionCfdiNomina();
@@ -98,9 +112,10 @@ namespace Nomina_2026_NET8
             string registroPatronal = Interaction.InputBox("Registro Patronal Imss ", "CFDI NOMINA", config.registro_patronal ?? "");
 
             // ---------------------------------------------------------
-            // RIESGO PATRONAL
+            // RIESGO PATRONAL - RUEP V9
             // ---------------------------------------------------------
             string riesgoFinal;
+            string riesgoPredeterminado = ObtenerClaveRiesgoImss(config.riesgo_imss);
 
             while (true)
             {
@@ -111,7 +126,7 @@ namespace Nomina_2026_NET8
                     "4\tCLASE IV\r\n" +
                     "5\tCLASE V\r\n",
                     "CFDI NOMINA",
-                    "1");
+                    riesgoPredeterminado);
 
                 switch (entradaRiesgo)
                 {

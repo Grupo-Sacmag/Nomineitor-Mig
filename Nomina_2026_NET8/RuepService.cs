@@ -92,6 +92,7 @@ namespace Nomina_2026_NET8
         }
 
 
+
         private static void AplicarMovimientoLaboralV9(JObject documento, EmpleadoCompleto anterior, EmpleadoCompleto actual)
         {
             if (anterior == null || actual == null || anterior.Id != actual.Id)
@@ -101,8 +102,7 @@ namespace Nomina_2026_NET8
 
             int id = actual.Id;
 
-            // Nunca permitir que una operación laboral
-            // cambie la fecha de alta original.
+            // Nunca permitir que una operación laboral cambie la fecha de alta original.
             if (actual.FechaAlta != anterior.FechaAlta)
             {
                 throw new InvalidOperationException($"Empleado {id}: la fecha de alta original no puede modificarse mediante este procedimiento.");
@@ -118,14 +118,14 @@ namespace Nomina_2026_NET8
 
             if (registro["historial_laboral"] is not JArray periodos || periodos.Count == 0 || periodos.Any(x => x is not JObject))
             {
-                throw new InvalidDataException(
-                    $"Empleado {id}: historial_laboral inválido o vacío.");
+                throw new InvalidDataException($"Empleado {id}: historial_laboral inválido o vacío.");
             }
 
             // Verificar que los periodos tienen IDs válidos.
             var ids = periodos.OfType<JObject>().Select(p => (int?)p["idPeriodo"] ?? 0).ToList();
 
-            if (ids.Any(x => x <= 0) || ids.Distinct().Count() != ids.Count)
+            if (ids.Any(x => x <= 0) ||
+                ids.Distinct().Count() != ids.Count)
             {
                 throw new InvalidDataException($"Empleado {id}: existen periodos laborales con identificadores inválidos o duplicados.");
             }
@@ -213,7 +213,6 @@ namespace Nomina_2026_NET8
                 }
 
                 DateTime baja = ValidarFechaLaboralV9(bajaAnterior, "baja anterior");
-
                 DateTime nuevaAlta = ValidarFechaLaboralV9(actual.FechaReingresoAlta, "fecha de reingreso");
 
                 if (nuevaAlta <= baja)
@@ -241,10 +240,87 @@ namespace Nomina_2026_NET8
             // =================================================
             // CASO 3: MOVIMIENTO NO SOPORTADO
             // =================================================
-            throw new InvalidOperationException(
-                $"Empleado {id}: se detectó un cambio laboral que requiere un procedimiento específico. No se modificó historial_laboral.");
+            throw new InvalidOperationException($"Empleado {id}: se detectó un cambio laboral que requiere un procedimiento específico. No se modificó historial_laboral.");
         }
 
+        private static JObject CrearRegistroAltaV9(EmpleadoCompleto empleado, IEnumerable<EmpleadoCompleto> todos)
+        {
+            if (empleado == null || empleado.Id <= 0)
+                throw new InvalidOperationException("El nuevo empleado no tiene un ID válido.");
+
+            if (string.IsNullOrWhiteSpace(empleado.Nombre) || string.IsNullOrWhiteSpace(empleado.ApellidoP) || string.IsNullOrWhiteSpace(empleado.ApellidoM) ||
+                string.IsNullOrWhiteSpace(empleado.RFC) || string.IsNullOrWhiteSpace(empleado.CURP))
+            {
+                throw new InvalidOperationException($"Empleado {empleado.Id}: faltan datos de identidad.");
+            }
+
+            if (!DateTime.TryParseExact(empleado.FechaAlta, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+            {
+                throw new InvalidOperationException($"Empleado {empleado.Id}: fecha de alta inválida.");
+            }
+
+            // Un empleado nuevo inicia con una relación laboral activa.
+            if (empleado.EsReingreso || !string.IsNullOrWhiteSpace(empleado.FechaBaja) || !string.IsNullOrWhiteSpace(empleado.FechaReingresoAlta) || !string.IsNullOrWhiteSpace(empleado.FechaReingresoBaja))
+            {
+                throw new InvalidOperationException($"Empleado {empleado.Id}: un alta nueva no puede contener una baja o reingreso previo.");
+            }
+
+            // Revisar duplicados contra los empleados de esta empresa.
+            void ValidarUnico(string valor, Func<EmpleadoCompleto, string> selector, string campo)
+            {
+                if (string.IsNullOrWhiteSpace(valor))
+                    return;
+
+                bool duplicado = todos.Any(x => x.Id != empleado.Id && string.Equals(selector(x)?.Trim(), valor.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                if (duplicado)
+                    throw new InvalidOperationException($"Empleado {empleado.Id}: {campo} duplicado.");
+            }
+
+            ValidarUnico(empleado.RFC, x => x.RFC, "RFC");
+            ValidarUnico(empleado.CURP, x => x.CURP, "CURP");
+            ValidarUnico(empleado.NSS, x => x.NSS, "NSS");
+
+            // Aprovechar el mapeo V9 que ya construimos.
+            RuepEmpleado nuevo = MapearEmpleadoARuep(empleado, new RuepEmpleado());
+
+            nuevo.idEmpleado = empleado.Id;
+            nuevo.fecha_alta = empleado.FechaAlta;
+            nuevo.fecha_baja = "";
+
+            // El salario integrado debe quedar dentro de ingresos.
+            nuevo.ingresos ??= new RuepIngresos();
+
+            nuevo.ingresos.integrado = empleado.SalarioIntegrado;
+
+            // Primer periodo laboral del empleado.
+            nuevo.historial_laboral = new List<RuepPeriodoLaboral>
+            {
+                new RuepPeriodoLaboral
+                {
+                    idPeriodo = 1,
+                    tipo_movimiento = "ALTA",
+                    fecha_alta = empleado.FechaAlta,
+                    fecha_baja = "",
+                    id_empresa_origen = null,
+                    id_empleado_origen = null,
+                    respeta_antiguedad = null
+                }
+            };
+
+            // Convertir al JSON que se insertará en RUEP V9.
+            JObject registro = JObject.FromObject(nuevo);
+
+            // Verificar nombres y estructuras definitivos.
+            if ((int?)registro["idEmpleado"] != empleado.Id || registro["ingresos"] is not JObject || registro["ingresos"]?["integrado"] == null || registro["cfdi"] is not JObject ||
+                registro["datos_personales"] is not JObject || registro["historial_laboral"] is not JArray || registro.Property("nss_imss") == null || registro["datos_personales"]?[
+                    "numero_tarjeta_banamex"] == null)
+            {
+                throw new InvalidDataException("El modelo C# no produjo correctamente la estructura de alta RUEP V9.");
+            }
+
+            return registro;
+        }
 
         public void GuardarCambios()
         {
@@ -254,13 +330,34 @@ namespace Nomina_2026_NET8
             if (_empleados.Any(e => e == null || e.Id <= 0) || _empleados.GroupBy(e => e.Id).Any(g => g.Count() > 1))
                 throw new InvalidOperationException("Hay identificadores de empleados inválidos o duplicados.");
 
-            // Las altas y eliminaciones de expedientes tendrán
-            // su propio procedimiento en la siguiente etapa.
-            if (_empleados.Count != _empleadosAlAbrir.Count || _empleados.Any(e => !_empleadosAlAbrir.ContainsKey(e.Id)))
-                throw new InvalidOperationException("Las altas y eliminaciones de empleados aún requieren el procedimiento específico de RUEP V9.");
+            // =============================================
+            // VALIDAR EMPLEADOS EXISTENTES Y NUEVOS
+            // =============================================
 
-            // Comprobar que otro servicio no haya cambiado
-            // el archivo desde que abrimos esta sesión.
+            // Ningún empleado original puede desaparecer.
+            var idsActuales = new HashSet<int>(_empleados.Select(e => e.Id));
+
+            if (_empleadosAlAbrir.Keys.Any(id => !idsActuales.Contains(id)))
+            {
+                throw new InvalidOperationException("No se permite eliminar empleados existentes mediante GuardarCambios().");
+            }
+
+            // Los empleados nuevos deben comenzar después del mayor ID original.
+            int siguienteId = _empleadosAlAbrir.Count == 0 ? 1 : _empleadosAlAbrir.Keys.Max() + 1;
+            var nuevos = _empleados.Where(e => !_empleadosAlAbrir.ContainsKey(e.Id)).OrderBy(e => e.Id).ToList();
+
+            foreach (var nuevo in nuevos)
+            {
+                if (nuevo.Id != siguienteId)
+                {
+                    throw new InvalidOperationException(
+                        $"ID de alta incorrecto: {nuevo.Id}. " + $"Se esperaba {siguienteId}.");
+                }
+
+                siguienteId++;
+            }
+
+            // Comprobar que otro servicio no haya cambiado el archivo desde que abrimos esta sesión.
             JObject discoActual = CryptoService.LoadEncrypted<JObject>(_ruta);
 
             if (!JToken.DeepEquals(discoActual, _jsonAlAbrir))
@@ -292,7 +389,26 @@ namespace Nomina_2026_NET8
 
             foreach (EmpleadoCompleto empleado in _empleados)
             {
-                EmpleadoCompleto anterior = _empleadosAlAbrir[empleado.Id];
+                // =============================================
+                // EMPLEADO NUEVO - ALTA RUEP V9
+                // =============================================
+
+                if (!_empleadosAlAbrir.TryGetValue(empleado.Id, out EmpleadoCompleto anterior))
+                {
+                    // Construir su expediente V9 completo.
+                    JObject nuevoRegistro = CrearRegistroAltaV9(empleado, _empleados);
+
+                    // No insertar IDs duplicados.
+                    if (personalJson.OfType<JObject>().Any(x => (int?)x["idEmpleado"] == empleado.Id))
+                    {
+                        throw new InvalidOperationException($"El ID {empleado.Id} ya existe en RUEP.dat.");
+                    }
+
+                    // Agregar al arreglo sin modificar empleados previos.
+                    personalJson.Add(nuevoRegistro);
+
+                    continue;
+                }
 
                 // No modificar empleados sin cambios.
                 if (JToken.DeepEquals(JObject.FromObject(anterior), JObject.FromObject(empleado)))
@@ -303,7 +419,8 @@ namespace Nomina_2026_NET8
                 // =============================================
 
                 bool hayCambiosLaborales = empleado.FechaAlta != anterior.FechaAlta || empleado.FechaBaja != anterior.FechaBaja || empleado.EsReingreso != anterior.EsReingreso ||
-                    empleado.FechaReingresoAlta != anterior.FechaReingresoAlta || empleado.FechaReingresoBaja != anterior.FechaReingresoBaja || empleado.RespetaAntiguedad != anterior.RespetaAntiguedad || empleado.EstatusLaboral != anterior.EstatusLaboral;
+                    empleado.FechaReingresoAlta != anterior.FechaReingresoAlta || empleado.FechaReingresoBaja != anterior.FechaReingresoBaja || 
+                    empleado.RespetaAntiguedad != anterior.RespetaAntiguedad || empleado.EstatusLaboral != anterior.EstatusLaboral;
 
                 if (hayCambiosLaborales)
                 {
@@ -368,11 +485,8 @@ namespace Nomina_2026_NET8
 
                 // Actualizar el estado de esta sesión.
                 _jsonAlAbrir = (JObject)documentoNuevo.DeepClone();
-
                 DatosEmpresa = CryptoService.LoadEncrypted<RuepRoot>(_ruta);
-
                 _empresaAlAbrir = JObject.FromObject(DatosEmpresa);
-
                 _empleadosAlAbrir = _empleados.ToDictionary(e => e.Id, e => JsonConvert.DeserializeObject<EmpleadoCompleto>(JsonConvert.SerializeObject(e)));
             }
             finally

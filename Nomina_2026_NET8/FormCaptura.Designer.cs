@@ -783,7 +783,7 @@
             // 
             lblSelecMes.AutoSize = true;
             lblSelecMes.Font = new Font("Microsoft Sans Serif", 9.75F);
-            lblSelecMes.Location = new Point(359, 10);
+            lblSelecMes.Location = new Point(388, 10);
             lblSelecMes.Margin = new Padding(4, 0, 4, 0);
             lblSelecMes.Name = "lblSelecMes";
             lblSelecMes.Size = new Size(108, 16);
@@ -794,7 +794,7 @@
             // 
             cbMes.DropDownStyle = ComboBoxStyle.DropDownList;
             cbMes.FormattingEnabled = true;
-            cbMes.Location = new Point(299, 32);
+            cbMes.Location = new Point(328, 32);
             cbMes.Margin = new Padding(4, 3, 4, 3);
             cbMes.Name = "cbMes";
             cbMes.Size = new Size(219, 23);
@@ -804,14 +804,15 @@
             // chkBoxCE
             // 
             chkBoxCE.AutoSize = true;
-            chkBoxCE.Location = new Point(359, 93);
+            chkBoxCE.Location = new Point(339, 90);
             chkBoxCE.Margin = new Padding(4, 3, 4, 3);
             chkBoxCE.Name = "chkBoxCE";
-            chkBoxCE.Size = new Size(117, 19);
+            chkBoxCE.Size = new Size(198, 19);
             chkBoxCE.TabIndex = 40;
-            chkBoxCE.Text = "Cantidad Excenta";
+            chkBoxCE.Text = "Aplicar percepción exenta global";
             chkBoxCE.UseVisualStyleBackColor = true;
             chkBoxCE.CheckedChanged += chkBoxCE_CheckedChanged;
+            chkBoxCE.Leave += chkBoxCE_Leave;
             // 
             // lblCuestion
             // 
@@ -827,8 +828,8 @@
             // 
             cbMotivo.DropDownStyle = ComboBoxStyle.DropDownList;
             cbMotivo.FormattingEnabled = true;
-            cbMotivo.Items.AddRange(new object[] { "Finiquito", "Aguinaldo", "Premio de Puntualidad", "PTU", "Prima Vacacional", "Otros..." });
-            cbMotivo.Location = new Point(299, 32);
+            cbMotivo.Items.AddRange(new object[] { "Finiquito", "Liquidación", "Aguinaldo", "Bono", "PTU", "Prima Vacacional", "Otros..." });
+            cbMotivo.Location = new Point(328, 32);
             cbMotivo.Margin = new Padding(4, 3, 4, 3);
             cbMotivo.Name = "cbMotivo";
             cbMotivo.Size = new Size(219, 23);
@@ -838,7 +839,7 @@
             // txtOtroRazon
             // 
             txtOtroRazon.BorderStyle = BorderStyle.FixedSingle;
-            txtOtroRazon.Location = new Point(299, 61);
+            txtOtroRazon.Location = new Point(328, 61);
             txtOtroRazon.Margin = new Padding(4, 3, 4, 3);
             txtOtroRazon.Name = "txtOtroRazon";
             txtOtroRazon.Size = new Size(219, 23);
@@ -850,7 +851,7 @@
             // 
             lblMotivo.AutoSize = true;
             lblMotivo.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblMotivo.Location = new Point(336, 10);
+            lblMotivo.Location = new Point(365, 10);
             lblMotivo.Margin = new Padding(4, 0, 4, 0);
             lblMotivo.Name = "lblMotivo";
             lblMotivo.Size = new Size(153, 16);
@@ -861,16 +862,16 @@
             // 
             lblCE.AutoSize = true;
             lblCE.Font = new Font("Microsoft Sans Serif", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblCE.Location = new Point(270, 120);
+            lblCE.Location = new Point(270, 112);
             lblCE.Margin = new Padding(4, 0, 4, 0);
             lblCE.Name = "lblCE";
-            lblCE.Size = new Size(148, 16);
+            lblCE.Size = new Size(186, 16);
             lblCE.TabIndex = 34;
-            lblCE.Text = "Monto Cantidad Exenta:";
+            lblCE.Text = "Importe exento por empleado:";
             // 
             // txtCE
             // 
-            txtCE.Location = new Point(426, 118);
+            txtCE.Location = new Point(464, 110);
             txtCE.Margin = new Padding(4, 3, 4, 3);
             txtCE.Name = "txtCE";
             txtCE.Size = new Size(136, 23);
@@ -1012,6 +1013,7 @@
             dgvMostrarPersonal.CellFormatting += dgvMostrarPersonal_CellFormatting;
             dgvMostrarPersonal.CellLeave += dgvMostrarPersonal_CellLeave;
             dgvMostrarPersonal.CellMouseDown += dgvMostrarPersonal_CellMouseDown;
+            dgvMostrarPersonal.CellValidating += dgvMostrarPersonal_CellValidating;
             dgvMostrarPersonal.EditingControlShowing += dgvMostrarPersonal_EditingControlShowing;
             dgvMostrarPersonal.KeyDown += dgvMostrarPersonal_KeyDown;
             // 

@@ -63,9 +63,13 @@
             txtIDActual = new TextBox();
             lblIDAsignado = new Label();
             gbIngresos = new GroupBox();
+            lblAntiguedadDelEmpleado = new Label();
             btnReingresoEmpleado = new Button();
+            lblAntiguedad = new Label();
             btnDarDeBajaEmpleado = new Button();
+            lblUltimaModDePersonal = new Label();
             txtOtrosDiarios = new TextBox();
+            lblFechaUltimaMod = new Label();
             txtISRMensual = new TextBox();
             txtViaticosDiarios = new TextBox();
             txtSalarioDiarioIntegrado = new TextBox();
@@ -89,9 +93,10 @@
             txtEmailEmpresa = new TextBox();
             lblEmailEmpresa = new Label();
             gbFiscales = new GroupBox();
+            panelLINKSAT = new Panel();
+            linklblSAT = new LinkLabel();
             txtPuesto = new TextBox();
             lblPuesto = new Label();
-            linklblSAT = new LinkLabel();
             label2 = new Label();
             txtRegimen = new TextBox();
             lblRegimen = new Label();
@@ -108,8 +113,8 @@
             txtCorreoElectronicoPersonal = new TextBox();
             lblEmailPersonal = new Label();
             gbDatosDomiciliarios = new GroupBox();
-            label3 = new Label();
             txtDireccionCompleta = new TextBox();
+            lblDireccionCompleta = new Label();
             lblDepartamento = new Label();
             txtDepartamento = new TextBox();
             lblCiudad = new Label();
@@ -123,13 +128,11 @@
             mskdtxtNoExterior = new MaskedTextBox();
             lblReferencias = new Label();
             txtReferencias = new TextBox();
-            lblFechaUltimaMod = new Label();
             lblColonia = new Label();
             lblCP = new Label();
             lblNoInterior = new Label();
             lblMunicipio = new Label();
             lblNoExterior = new Label();
-            lblUltimaModDePersonal = new Label();
             toolStrip1 = new ToolStrip();
             tsFiltrar = new ToolStripDropDownButton();
             tsOrdenarAlfabeticamente = new ToolStripMenuItem();
@@ -149,15 +152,13 @@
             btnBuscarEnDGV = new Button();
             dtpFechaIngreso = new DateTimePicker();
             dtpFechaBaja = new DateTimePicker();
-            lblAntiguedad = new Label();
-            lblAntiguedadDelEmpleado = new Label();
-            label4 = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvEditPersonal).BeginInit();
             gbDatosPersonales.SuspendLayout();
             gbIngresos.SuspendLayout();
             panelCFDICompleto.SuspendLayout();
             gbContactoEmpresa.SuspendLayout();
             gbFiscales.SuspendLayout();
+            panelLINKSAT.SuspendLayout();
             gpContactoPersonal.SuspendLayout();
             gbDatosDomiciliarios.SuspendLayout();
             toolStrip1.SuspendLayout();
@@ -291,14 +292,14 @@
             gbDatosPersonales.Margin = new Padding(4, 3, 4, 3);
             gbDatosPersonales.Name = "gbDatosPersonales";
             gbDatosPersonales.Padding = new Padding(4, 3, 4, 3);
-            gbDatosPersonales.Size = new Size(706, 263);
+            gbDatosPersonales.Size = new Size(706, 257);
             gbDatosPersonales.TabIndex = 0;
             gbDatosPersonales.TabStop = false;
             gbDatosPersonales.Text = "Datos Personales";
             // 
             // txtRiesgoIMSS
             // 
-            txtRiesgoIMSS.Location = new Point(492, 236);
+            txtRiesgoIMSS.Location = new Point(489, 214);
             txtRiesgoIMSS.Margin = new Padding(4, 3, 4, 3);
             txtRiesgoIMSS.Name = "txtRiesgoIMSS";
             txtRiesgoIMSS.Size = new Size(196, 21);
@@ -308,7 +309,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            label1.Location = new Point(385, 237);
+            label1.Location = new Point(382, 215);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new Size(99, 18);
@@ -317,7 +318,7 @@
             // 
             // mskdNSS
             // 
-            mskdNSS.Location = new Point(95, 237);
+            mskdNSS.Location = new Point(92, 215);
             mskdNSS.Margin = new Padding(4, 3, 4, 3);
             mskdNSS.Mask = "<<";
             mskdNSS.Name = "mskdNSS";
@@ -329,7 +330,7 @@
             // 
             lblNSS.AutoSize = true;
             lblNSS.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblNSS.Location = new Point(38, 237);
+            lblNSS.Location = new Point(35, 215);
             lblNSS.Margin = new Padding(4, 0, 4, 0);
             lblNSS.Name = "lblNSS";
             lblNSS.Size = new Size(43, 18);
@@ -338,7 +339,7 @@
             // 
             // mskdBANAMEX
             // 
-            mskdBANAMEX.Location = new Point(385, 189);
+            mskdBANAMEX.Location = new Point(382, 167);
             mskdBANAMEX.Margin = new Padding(4, 3, 4, 3);
             mskdBANAMEX.Mask = "0000000000000000";
             mskdBANAMEX.Name = "mskdBANAMEX";
@@ -348,7 +349,7 @@
             // 
             // mskdCURP
             // 
-            mskdCURP.Location = new Point(385, 123);
+            mskdCURP.Location = new Point(385, 109);
             mskdCURP.Margin = new Padding(4, 3, 4, 3);
             mskdCURP.Mask = ">LLLL000000LAAAAAL0";
             mskdCURP.Name = "mskdCURP";
@@ -358,7 +359,7 @@
             // 
             // mskdRFC
             // 
-            mskdRFC.Location = new Point(22, 189);
+            mskdRFC.Location = new Point(22, 167);
             mskdRFC.Margin = new Padding(4, 3, 4, 3);
             mskdRFC.Mask = ">LLLL000000AAA";
             mskdRFC.Name = "mskdRFC";
@@ -370,7 +371,7 @@
             // 
             lblBanamex.AutoSize = true;
             lblBanamex.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblBanamex.Location = new Point(382, 166);
+            lblBanamex.Location = new Point(379, 144);
             lblBanamex.Margin = new Padding(4, 0, 4, 0);
             lblBanamex.Name = "lblBanamex";
             lblBanamex.Size = new Size(84, 18);
@@ -379,7 +380,7 @@
             // 
             // txtApellidoMaterno
             // 
-            txtApellidoMaterno.Location = new Point(22, 122);
+            txtApellidoMaterno.Location = new Point(22, 108);
             txtApellidoMaterno.Margin = new Padding(4, 3, 4, 3);
             txtApellidoMaterno.MaxLength = 30;
             txtApellidoMaterno.Name = "txtApellidoMaterno";
@@ -391,7 +392,7 @@
             // 
             lblCURP.AutoSize = true;
             lblCURP.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblCURP.Location = new Point(382, 99);
+            lblCURP.Location = new Point(382, 85);
             lblCURP.Margin = new Padding(4, 0, 4, 0);
             lblCURP.Name = "lblCURP";
             lblCURP.Size = new Size(55, 18);
@@ -402,7 +403,7 @@
             // 
             lblRFC.AutoSize = true;
             lblRFC.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblRFC.Location = new Point(19, 166);
+            lblRFC.Location = new Point(19, 144);
             lblRFC.Margin = new Padding(4, 0, 4, 0);
             lblRFC.Name = "lblRFC";
             lblRFC.Size = new Size(43, 18);
@@ -444,7 +445,7 @@
             // 
             lblApellidoMaterno.AutoSize = true;
             lblApellidoMaterno.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblApellidoMaterno.Location = new Point(19, 99);
+            lblApellidoMaterno.Location = new Point(19, 85);
             lblApellidoMaterno.Margin = new Padding(4, 0, 4, 0);
             lblApellidoMaterno.Name = "lblApellidoMaterno";
             lblApellidoMaterno.Size = new Size(122, 18);
@@ -466,7 +467,7 @@
             // 
             lblFechaBaja.AutoSize = true;
             lblFechaBaja.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblFechaBaja.Location = new Point(1056, 79);
+            lblFechaBaja.Location = new Point(1312, 82);
             lblFechaBaja.Margin = new Padding(4, 0, 4, 0);
             lblFechaBaja.Name = "lblFechaBaja";
             lblFechaBaja.Size = new Size(106, 18);
@@ -477,7 +478,7 @@
             // 
             labelFechaIngreso.AutoSize = true;
             labelFechaIngreso.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            labelFechaIngreso.Location = new Point(1036, 50);
+            labelFechaIngreso.Location = new Point(1029, 82);
             labelFechaIngreso.Margin = new Padding(4, 0, 4, 0);
             labelFechaIngreso.Name = "labelFechaIngreso";
             labelFechaIngreso.Size = new Size(126, 18);
@@ -508,9 +509,13 @@
             // 
             // gbIngresos
             // 
+            gbIngresos.Controls.Add(lblAntiguedadDelEmpleado);
             gbIngresos.Controls.Add(btnReingresoEmpleado);
+            gbIngresos.Controls.Add(lblAntiguedad);
             gbIngresos.Controls.Add(btnDarDeBajaEmpleado);
+            gbIngresos.Controls.Add(lblUltimaModDePersonal);
             gbIngresos.Controls.Add(txtOtrosDiarios);
+            gbIngresos.Controls.Add(lblFechaUltimaMod);
             gbIngresos.Controls.Add(txtISRMensual);
             gbIngresos.Controls.Add(txtViaticosDiarios);
             gbIngresos.Controls.Add(txtSalarioDiarioIntegrado);
@@ -525,20 +530,30 @@
             gbIngresos.Controls.Add(lblIngresoDiarioNormal);
             gbIngresos.Controls.Add(btnCancelarCambios);
             gbIngresos.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            gbIngresos.Location = new Point(852, 374);
+            gbIngresos.Location = new Point(852, 369);
             gbIngresos.Margin = new Padding(4, 3, 4, 3);
             gbIngresos.Name = "gbIngresos";
             gbIngresos.Padding = new Padding(4, 3, 4, 3);
-            gbIngresos.Size = new Size(706, 278);
+            gbIngresos.Size = new Size(706, 288);
             gbIngresos.TabIndex = 35;
             gbIngresos.TabStop = false;
             gbIngresos.Text = "Ingresos";
+            // 
+            // lblAntiguedadDelEmpleado
+            // 
+            lblAntiguedadDelEmpleado.AutoSize = true;
+            lblAntiguedadDelEmpleado.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
+            lblAntiguedadDelEmpleado.Location = new Point(530, 115);
+            lblAntiguedadDelEmpleado.Name = "lblAntiguedadDelEmpleado";
+            lblAntiguedadDelEmpleado.Size = new Size(104, 18);
+            lblAntiguedadDelEmpleado.TabIndex = 64;
+            lblAntiguedadDelEmpleado.Text = "ANTIGÜEDAD";
             // 
             // btnReingresoEmpleado
             // 
             btnReingresoEmpleado.BackgroundImageLayout = ImageLayout.Stretch;
             btnReingresoEmpleado.Font = new Font("Microsoft Sans Serif", 11.25F);
-            btnReingresoEmpleado.Location = new Point(341, 211);
+            btnReingresoEmpleado.Location = new Point(353, 236);
             btnReingresoEmpleado.Margin = new Padding(4, 3, 4, 3);
             btnReingresoEmpleado.Name = "btnReingresoEmpleado";
             btnReingresoEmpleado.Size = new Size(89, 35);
@@ -547,11 +562,21 @@
             btnReingresoEmpleado.UseVisualStyleBackColor = true;
             btnReingresoEmpleado.Click += btnReingresoEmpleado_Click;
             // 
+            // lblAntiguedad
+            // 
+            lblAntiguedad.AutoSize = true;
+            lblAntiguedad.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblAntiguedad.Location = new Point(436, 115);
+            lblAntiguedad.Name = "lblAntiguedad";
+            lblAntiguedad.Size = new Size(95, 18);
+            lblAntiguedad.TabIndex = 63;
+            lblAntiguedad.Text = "Antigüedad:";
+            // 
             // btnDarDeBajaEmpleado
             // 
             btnDarDeBajaEmpleado.BackgroundImage = (Image)resources.GetObject("btnDarDeBajaEmpleado.BackgroundImage");
             btnDarDeBajaEmpleado.BackgroundImageLayout = ImageLayout.Stretch;
-            btnDarDeBajaEmpleado.Location = new Point(360, 201);
+            btnDarDeBajaEmpleado.Location = new Point(372, 226);
             btnDarDeBajaEmpleado.Margin = new Padding(4, 3, 4, 3);
             btnDarDeBajaEmpleado.Name = "btnDarDeBajaEmpleado";
             btnDarDeBajaEmpleado.Size = new Size(52, 54);
@@ -559,50 +584,72 @@
             btnDarDeBajaEmpleado.UseVisualStyleBackColor = true;
             btnDarDeBajaEmpleado.Click += btnDarDeBajaEmpleado_Click;
             // 
+            // lblUltimaModDePersonal
+            // 
+            lblUltimaModDePersonal.AutoSize = true;
+            lblUltimaModDePersonal.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
+            lblUltimaModDePersonal.Location = new Point(19, 158);
+            lblUltimaModDePersonal.Margin = new Padding(4, 0, 4, 0);
+            lblUltimaModDePersonal.Name = "lblUltimaModDePersonal";
+            lblUltimaModDePersonal.Size = new Size(337, 18);
+            lblUltimaModDePersonal.TabIndex = 15;
+            lblUltimaModDePersonal.Text = "Última modificación de datos del empleado:";
+            // 
             // txtOtrosDiarios
             // 
-            txtOtrosDiarios.Location = new Point(24, 220);
+            txtOtrosDiarios.Location = new Point(186, 114);
             txtOtrosDiarios.Margin = new Padding(4, 3, 4, 3);
             txtOtrosDiarios.Name = "txtOtrosDiarios";
-            txtOtrosDiarios.Size = new Size(300, 21);
+            txtOtrosDiarios.Size = new Size(154, 21);
             txtOtrosDiarios.TabIndex = 68;
+            // 
+            // lblFechaUltimaMod
+            // 
+            lblFechaUltimaMod.AutoSize = true;
+            lblFechaUltimaMod.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            lblFechaUltimaMod.Location = new Point(360, 158);
+            lblFechaUltimaMod.Margin = new Padding(4, 0, 4, 0);
+            lblFechaUltimaMod.Name = "lblFechaUltimaMod";
+            lblFechaUltimaMod.Size = new Size(80, 18);
+            lblFechaUltimaMod.TabIndex = 39;
+            lblFechaUltimaMod.Text = "00/00/0000";
             // 
             // txtISRMensual
             // 
-            txtISRMensual.Location = new Point(385, 137);
+            txtISRMensual.Location = new Point(539, 77);
             txtISRMensual.Margin = new Padding(4, 3, 4, 3);
             txtISRMensual.Name = "txtISRMensual";
-            txtISRMensual.Size = new Size(300, 21);
+            txtISRMensual.Size = new Size(149, 21);
             txtISRMensual.TabIndex = 67;
             // 
             // txtViaticosDiarios
             // 
-            txtViaticosDiarios.Location = new Point(22, 135);
+            txtViaticosDiarios.Location = new Point(186, 77);
             txtViaticosDiarios.Margin = new Padding(4, 3, 4, 3);
             txtViaticosDiarios.Name = "txtViaticosDiarios";
-            txtViaticosDiarios.Size = new Size(300, 21);
+            txtViaticosDiarios.Size = new Size(154, 21);
             txtViaticosDiarios.TabIndex = 66;
             // 
             // txtSalarioDiarioIntegrado
             // 
-            txtSalarioDiarioIntegrado.Location = new Point(383, 63);
+            txtSalarioDiarioIntegrado.Location = new Point(539, 39);
             txtSalarioDiarioIntegrado.Margin = new Padding(4, 3, 4, 3);
             txtSalarioDiarioIntegrado.Name = "txtSalarioDiarioIntegrado";
-            txtSalarioDiarioIntegrado.Size = new Size(303, 21);
+            txtSalarioDiarioIntegrado.Size = new Size(149, 21);
             txtSalarioDiarioIntegrado.TabIndex = 65;
             // 
             // txtIngresoDiarioNormal
             // 
-            txtIngresoDiarioNormal.Location = new Point(24, 63);
+            txtIngresoDiarioNormal.Location = new Point(186, 39);
             txtIngresoDiarioNormal.Margin = new Padding(4, 3, 4, 3);
             txtIngresoDiarioNormal.Name = "txtIngresoDiarioNormal";
-            txtIngresoDiarioNormal.Size = new Size(300, 21);
+            txtIngresoDiarioNormal.Size = new Size(154, 21);
             txtIngresoDiarioNormal.TabIndex = 64;
             // 
             // btnMostrarCFDI
             // 
             btnMostrarCFDI.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            btnMostrarCFDI.Location = new Point(584, 197);
+            btnMostrarCFDI.Location = new Point(596, 222);
             btnMostrarCFDI.Margin = new Padding(4, 3, 4, 3);
             btnMostrarCFDI.Name = "btnMostrarCFDI";
             btnMostrarCFDI.Size = new Size(102, 60);
@@ -615,7 +662,7 @@
             // btnGuardarCambios
             // 
             btnGuardarCambios.Font = new Font("Microsoft Sans Serif", 11.25F);
-            btnGuardarCambios.Location = new Point(593, 209);
+            btnGuardarCambios.Location = new Point(605, 234);
             btnGuardarCambios.Margin = new Padding(4, 3, 4, 3);
             btnGuardarCambios.Name = "btnGuardarCambios";
             btnGuardarCambios.Size = new Size(90, 40);
@@ -627,7 +674,7 @@
             // btnModificarRegistro
             // 
             btnModificarRegistro.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            btnModificarRegistro.Location = new Point(451, 197);
+            btnModificarRegistro.Location = new Point(463, 222);
             btnModificarRegistro.Margin = new Padding(4, 3, 4, 3);
             btnModificarRegistro.Name = "btnModificarRegistro";
             btnModificarRegistro.Size = new Size(102, 60);
@@ -641,7 +688,7 @@
             // 
             lblImpuestoMensualISR.AutoSize = true;
             lblImpuestoMensualISR.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblImpuestoMensualISR.Location = new Point(382, 113);
+            lblImpuestoMensualISR.Location = new Point(360, 80);
             lblImpuestoMensualISR.Margin = new Padding(4, 0, 4, 0);
             lblImpuestoMensualISR.Name = "lblImpuestoMensualISR";
             lblImpuestoMensualISR.Size = new Size(171, 18);
@@ -652,7 +699,7 @@
             // 
             lblSalarioDiarioIntegrado.AutoSize = true;
             lblSalarioDiarioIntegrado.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblSalarioDiarioIntegrado.Location = new Point(382, 39);
+            lblSalarioDiarioIntegrado.Location = new Point(365, 42);
             lblSalarioDiarioIntegrado.Margin = new Padding(4, 0, 4, 0);
             lblSalarioDiarioIntegrado.Name = "lblSalarioDiarioIntegrado";
             lblSalarioDiarioIntegrado.Size = new Size(166, 18);
@@ -663,7 +710,7 @@
             // 
             lblOtrosDiariosFijos.AutoSize = true;
             lblOtrosDiariosFijos.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblOtrosDiariosFijos.Location = new Point(21, 197);
+            lblOtrosDiariosFijos.Location = new Point(41, 117);
             lblOtrosDiariosFijos.Margin = new Padding(4, 0, 4, 0);
             lblOtrosDiariosFijos.Name = "lblOtrosDiariosFijos";
             lblOtrosDiariosFijos.Size = new Size(137, 18);
@@ -674,7 +721,7 @@
             // 
             lblViaticosDiarios.AutoSize = true;
             lblViaticosDiarios.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblViaticosDiarios.Location = new Point(21, 113);
+            lblViaticosDiarios.Location = new Point(63, 80);
             lblViaticosDiarios.Margin = new Padding(4, 0, 4, 0);
             lblViaticosDiarios.Name = "lblViaticosDiarios";
             lblViaticosDiarios.Size = new Size(115, 18);
@@ -695,7 +742,7 @@
             // btnCancelarCambios
             // 
             btnCancelarCambios.Font = new Font("Microsoft Sans Serif", 11.25F);
-            btnCancelarCambios.Location = new Point(457, 208);
+            btnCancelarCambios.Location = new Point(469, 233);
             btnCancelarCambios.Margin = new Padding(4, 3, 4, 3);
             btnCancelarCambios.Name = "btnCancelarCambios";
             btnCancelarCambios.Size = new Size(90, 40);
@@ -713,7 +760,7 @@
             panelCFDICompleto.Location = new Point(13, 63);
             panelCFDICompleto.Margin = new Padding(4, 3, 4, 3);
             panelCFDICompleto.Name = "panelCFDICompleto";
-            panelCFDICompleto.Size = new Size(819, 588);
+            panelCFDICompleto.Size = new Size(819, 594);
             panelCFDICompleto.TabIndex = 3;
             // 
             // gbContactoEmpresa
@@ -726,7 +773,7 @@
             gbContactoEmpresa.Controls.Add(txtEmailEmpresa);
             gbContactoEmpresa.Controls.Add(lblEmailEmpresa);
             gbContactoEmpresa.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
-            gbContactoEmpresa.Location = new Point(12, 414);
+            gbContactoEmpresa.Location = new Point(12, 335);
             gbContactoEmpresa.Margin = new Padding(4, 3, 4, 3);
             gbContactoEmpresa.Name = "gbContactoEmpresa";
             gbContactoEmpresa.Padding = new Padding(4, 3, 4, 3);
@@ -738,7 +785,7 @@
             // chckbCorreoEmpresa
             // 
             chckbCorreoEmpresa.AutoSize = true;
-            chckbCorreoEmpresa.Location = new Point(216, 52);
+            chckbCorreoEmpresa.Location = new Point(148, 53);
             chckbCorreoEmpresa.Margin = new Padding(4, 3, 4, 3);
             chckbCorreoEmpresa.Name = "chckbCorreoEmpresa";
             chckbCorreoEmpresa.Size = new Size(132, 19);
@@ -749,7 +796,7 @@
             // 
             // txtExt
             // 
-            txtExt.Location = new Point(699, 33);
+            txtExt.Location = new Point(691, 26);
             txtExt.Margin = new Padding(4, 3, 4, 3);
             txtExt.MaxLength = 5;
             txtExt.Name = "txtExt";
@@ -760,7 +807,7 @@
             // 
             lblExtensionEmpresa.AutoSize = true;
             lblExtensionEmpresa.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblExtensionEmpresa.Location = new Point(653, 36);
+            lblExtensionEmpresa.Location = new Point(653, 29);
             lblExtensionEmpresa.Margin = new Padding(4, 0, 4, 0);
             lblExtensionEmpresa.Name = "lblExtensionEmpresa";
             lblExtensionEmpresa.Size = new Size(33, 18);
@@ -769,7 +816,7 @@
             // 
             // txtTelEmpr
             // 
-            txtTelEmpr.Location = new Point(479, 33);
+            txtTelEmpr.Location = new Point(491, 26);
             txtTelEmpr.Margin = new Padding(4, 3, 4, 3);
             txtTelEmpr.MaxLength = 10;
             txtTelEmpr.Name = "txtTelEmpr";
@@ -780,7 +827,7 @@
             // 
             lblTelefonoEmpresa.AutoSize = true;
             lblTelefonoEmpresa.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblTelefonoEmpresa.Location = new Point(391, 36);
+            lblTelefonoEmpresa.Location = new Point(422, 27);
             lblTelefonoEmpresa.Margin = new Padding(4, 0, 4, 0);
             lblTelefonoEmpresa.Name = "lblTelefonoEmpresa";
             lblTelefonoEmpresa.Size = new Size(70, 18);
@@ -789,17 +836,17 @@
             // 
             // txtEmailEmpresa
             // 
-            txtEmailEmpresa.Location = new Point(70, 24);
+            txtEmailEmpresa.Location = new Point(69, 26);
             txtEmailEmpresa.Margin = new Padding(4, 3, 4, 3);
             txtEmailEmpresa.Name = "txtEmailEmpresa";
-            txtEmailEmpresa.Size = new Size(302, 21);
+            txtEmailEmpresa.Size = new Size(335, 21);
             txtEmailEmpresa.TabIndex = 0;
             // 
             // lblEmailEmpresa
             // 
             lblEmailEmpresa.AutoSize = true;
             lblEmailEmpresa.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblEmailEmpresa.Location = new Point(6, 24);
+            lblEmailEmpresa.Location = new Point(13, 24);
             lblEmailEmpresa.Margin = new Padding(4, 0, 4, 0);
             lblEmailEmpresa.Name = "lblEmailEmpresa";
             lblEmailEmpresa.Size = new Size(49, 18);
@@ -808,58 +855,68 @@
             // 
             // gbFiscales
             // 
+            gbFiscales.Controls.Add(panelLINKSAT);
             gbFiscales.Controls.Add(txtPuesto);
             gbFiscales.Controls.Add(lblPuesto);
-            gbFiscales.Controls.Add(linklblSAT);
             gbFiscales.Controls.Add(label2);
             gbFiscales.Controls.Add(txtRegimen);
             gbFiscales.Controls.Add(lblRegimen);
             gbFiscales.Controls.Add(txtActividadEcon);
             gbFiscales.Controls.Add(lblActividadEconomica);
             gbFiscales.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
-            gbFiscales.Location = new Point(12, 502);
+            gbFiscales.Location = new Point(12, 432);
             gbFiscales.Margin = new Padding(4, 3, 4, 3);
             gbFiscales.Name = "gbFiscales";
             gbFiscales.Padding = new Padding(4, 3, 4, 3);
-            gbFiscales.Size = new Size(790, 83);
+            gbFiscales.Size = new Size(790, 117);
             gbFiscales.TabIndex = 25;
             gbFiscales.TabStop = false;
             gbFiscales.Text = "Fiscales";
             // 
+            // panelLINKSAT
+            // 
+            panelLINKSAT.Controls.Add(linklblSAT);
+            panelLINKSAT.Location = new Point(81, 83);
+            panelLINKSAT.Name = "panelLINKSAT";
+            panelLINKSAT.Size = new Size(693, 28);
+            panelLINKSAT.TabIndex = 58;
+            // 
+            // linklblSAT
+            // 
+            linklblSAT.AutoSize = true;
+            linklblSAT.Dock = DockStyle.Fill;
+            linklblSAT.Location = new Point(0, 0);
+            linklblSAT.Name = "linklblSAT";
+            linklblSAT.Size = new Size(67, 15);
+            linklblSAT.TabIndex = 55;
+            linklblSAT.TabStop = true;
+            linklblSAT.Text = "LINK SAT";
+            linklblSAT.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // txtPuesto
             // 
-            txtPuesto.Location = new Point(564, 45);
+            txtPuesto.Location = new Point(542, 43);
             txtPuesto.Margin = new Padding(4, 3, 4, 3);
             txtPuesto.Name = "txtPuesto";
-            txtPuesto.Size = new Size(218, 21);
+            txtPuesto.Size = new Size(207, 21);
             txtPuesto.TabIndex = 57;
             // 
             // lblPuesto
             // 
             lblPuesto.AutoSize = true;
             lblPuesto.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblPuesto.Location = new Point(497, 46);
+            lblPuesto.Location = new Point(542, 21);
             lblPuesto.Margin = new Padding(4, 0, 4, 0);
             lblPuesto.Name = "lblPuesto";
-            lblPuesto.Size = new Size(59, 18);
+            lblPuesto.Size = new Size(55, 18);
             lblPuesto.TabIndex = 56;
-            lblPuesto.Text = "Puesto:";
-            // 
-            // linklblSAT
-            // 
-            linklblSAT.AutoSize = true;
-            linklblSAT.Location = new Point(564, 20);
-            linklblSAT.Name = "linklblSAT";
-            linklblSAT.Size = new Size(67, 15);
-            linklblSAT.TabIndex = 55;
-            linklblSAT.TabStop = true;
-            linklblSAT.Text = "LINK SAT";
+            lblPuesto.Text = "Puesto";
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            label2.Location = new Point(485, 20);
+            label2.Location = new Point(8, 81);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
             label2.Size = new Size(71, 18);
@@ -868,17 +925,17 @@
             // 
             // txtRegimen
             // 
-            txtRegimen.Location = new Point(241, 43);
+            txtRegimen.Location = new Point(260, 43);
             txtRegimen.Margin = new Padding(4, 3, 4, 3);
             txtRegimen.Name = "txtRegimen";
-            txtRegimen.Size = new Size(220, 21);
+            txtRegimen.Size = new Size(260, 21);
             txtRegimen.TabIndex = 1;
             // 
             // lblRegimen
             // 
             lblRegimen.AutoSize = true;
             lblRegimen.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblRegimen.Location = new Point(241, 18);
+            lblRegimen.Location = new Point(260, 19);
             lblRegimen.Margin = new Padding(4, 0, 4, 0);
             lblRegimen.Name = "lblRegimen";
             lblRegimen.Size = new Size(67, 18);
@@ -890,14 +947,14 @@
             txtActividadEcon.Location = new Point(7, 43);
             txtActividadEcon.Margin = new Padding(4, 3, 4, 3);
             txtActividadEcon.Name = "txtActividadEcon";
-            txtActividadEcon.Size = new Size(220, 21);
+            txtActividadEcon.Size = new Size(240, 21);
             txtActividadEcon.TabIndex = 0;
             // 
             // lblActividadEconomica
             // 
             lblActividadEconomica.AutoSize = true;
             lblActividadEconomica.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblActividadEconomica.Location = new Point(4, 18);
+            lblActividadEconomica.Location = new Point(8, 21);
             lblActividadEconomica.Margin = new Padding(4, 0, 4, 0);
             lblActividadEconomica.Name = "lblActividadEconomica";
             lblActividadEconomica.Size = new Size(146, 18);
@@ -916,11 +973,11 @@
             gpContactoPersonal.Controls.Add(txtCorreoElectronicoPersonal);
             gpContactoPersonal.Controls.Add(lblEmailPersonal);
             gpContactoPersonal.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
-            gpContactoPersonal.Location = new Point(12, 286);
+            gpContactoPersonal.Location = new Point(12, 212);
             gpContactoPersonal.Margin = new Padding(4, 3, 4, 3);
             gpContactoPersonal.Name = "gpContactoPersonal";
             gpContactoPersonal.Padding = new Padding(4, 3, 4, 3);
-            gpContactoPersonal.Size = new Size(790, 121);
+            gpContactoPersonal.Size = new Size(790, 107);
             gpContactoPersonal.TabIndex = 14;
             gpContactoPersonal.TabStop = false;
             gpContactoPersonal.Text = "Contacto (Personal)";
@@ -928,7 +985,7 @@
             // chckbCorreoPersonal
             // 
             chckbCorreoPersonal.AutoSize = true;
-            chckbCorreoPersonal.Location = new Point(594, 61);
+            chckbCorreoPersonal.Location = new Point(468, 70);
             chckbCorreoPersonal.Margin = new Padding(4, 3, 4, 3);
             chckbCorreoPersonal.Name = "chckbCorreoPersonal";
             chckbCorreoPersonal.Size = new Size(132, 19);
@@ -939,30 +996,30 @@
             // 
             // mskdtxtLADATel
             // 
-            mskdtxtLADATel.Location = new Point(128, 74);
+            mskdtxtLADATel.Location = new Point(65, 30);
             mskdtxtLADATel.Margin = new Padding(4, 3, 4, 3);
             mskdtxtLADATel.Mask = "+000";
             mskdtxtLADATel.Name = "mskdtxtLADATel";
-            mskdtxtLADATel.Size = new Size(83, 21);
+            mskdtxtLADATel.Size = new Size(75, 21);
             mskdtxtLADATel.TabIndex = 49;
             // 
             // mskdTelFijo
             // 
-            mskdTelFijo.Location = new Point(128, 30);
+            mskdTelFijo.Location = new Point(629, 28);
             mskdTelFijo.Margin = new Padding(4, 3, 4, 3);
             mskdTelFijo.Mask = "0000000000";
             mskdTelFijo.Name = "mskdTelFijo";
-            mskdTelFijo.Size = new Size(163, 21);
+            mskdTelFijo.Size = new Size(145, 21);
             mskdTelFijo.TabIndex = 1;
             mskdTelFijo.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
             // 
             // mskdTelMovil
             // 
-            mskdTelMovil.Location = new Point(369, 75);
+            mskdTelMovil.Location = new Point(316, 30);
             mskdTelMovil.Margin = new Padding(4, 3, 4, 3);
             mskdTelMovil.Mask = "0000000000";
             mskdTelMovil.Name = "mskdTelMovil";
-            mskdTelMovil.Size = new Size(163, 21);
+            mskdTelMovil.Size = new Size(145, 21);
             mskdTelMovil.TabIndex = 3;
             mskdTelMovil.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
             // 
@@ -970,7 +1027,7 @@
             // 
             lblLADA.AutoSize = true;
             lblLADA.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblLADA.Location = new Point(64, 75);
+            lblLADA.Location = new Point(8, 33);
             lblLADA.Margin = new Padding(4, 0, 4, 0);
             lblLADA.Name = "lblLADA";
             lblLADA.Size = new Size(49, 18);
@@ -981,7 +1038,7 @@
             // 
             lblTelefonoMovilPersonal.AutoSize = true;
             lblTelefonoMovilPersonal.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblTelefonoMovilPersonal.Location = new Point(234, 75);
+            lblTelefonoMovilPersonal.Location = new Point(199, 29);
             lblTelefonoMovilPersonal.Margin = new Padding(4, 0, 4, 0);
             lblTelefonoMovilPersonal.Name = "lblTelefonoMovilPersonal";
             lblTelefonoMovilPersonal.Size = new Size(109, 18);
@@ -992,7 +1049,7 @@
             // 
             lblTelefonoFijoPersonal.AutoSize = true;
             lblTelefonoFijoPersonal.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblTelefonoFijoPersonal.Location = new Point(15, 31);
+            lblTelefonoFijoPersonal.Location = new Point(523, 31);
             lblTelefonoFijoPersonal.Margin = new Padding(4, 0, 4, 0);
             lblTelefonoFijoPersonal.Name = "lblTelefonoFijoPersonal";
             lblTelefonoFijoPersonal.Size = new Size(98, 18);
@@ -1001,7 +1058,7 @@
             // 
             // txtCorreoElectronicoPersonal
             // 
-            txtCorreoElectronicoPersonal.Location = new Point(391, 31);
+            txtCorreoElectronicoPersonal.Location = new Point(69, 70);
             txtCorreoElectronicoPersonal.Margin = new Padding(4, 3, 4, 3);
             txtCorreoElectronicoPersonal.Name = "txtCorreoElectronicoPersonal";
             txtCorreoElectronicoPersonal.Size = new Size(391, 21);
@@ -1011,7 +1068,7 @@
             // 
             lblEmailPersonal.AutoSize = true;
             lblEmailPersonal.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblEmailPersonal.Location = new Point(335, 32);
+            lblEmailPersonal.Location = new Point(13, 71);
             lblEmailPersonal.Margin = new Padding(4, 0, 4, 0);
             lblEmailPersonal.Name = "lblEmailPersonal";
             lblEmailPersonal.Size = new Size(49, 18);
@@ -1020,9 +1077,8 @@
             // 
             // gbDatosDomiciliarios
             // 
-            gbDatosDomiciliarios.Controls.Add(label4);
-            gbDatosDomiciliarios.Controls.Add(label3);
             gbDatosDomiciliarios.Controls.Add(txtDireccionCompleta);
+            gbDatosDomiciliarios.Controls.Add(lblDireccionCompleta);
             gbDatosDomiciliarios.Controls.Add(lblDepartamento);
             gbDatosDomiciliarios.Controls.Add(txtDepartamento);
             gbDatosDomiciliarios.Controls.Add(lblCiudad);
@@ -1036,47 +1092,44 @@
             gbDatosDomiciliarios.Controls.Add(mskdtxtNoExterior);
             gbDatosDomiciliarios.Controls.Add(lblReferencias);
             gbDatosDomiciliarios.Controls.Add(txtReferencias);
-            gbDatosDomiciliarios.Controls.Add(lblFechaUltimaMod);
             gbDatosDomiciliarios.Controls.Add(lblColonia);
             gbDatosDomiciliarios.Controls.Add(lblCP);
             gbDatosDomiciliarios.Controls.Add(lblNoInterior);
             gbDatosDomiciliarios.Controls.Add(lblMunicipio);
             gbDatosDomiciliarios.Controls.Add(lblNoExterior);
-            gbDatosDomiciliarios.Controls.Add(lblUltimaModDePersonal);
             gbDatosDomiciliarios.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
-            gbDatosDomiciliarios.Location = new Point(12, 8);
+            gbDatosDomiciliarios.Location = new Point(12, 13);
             gbDatosDomiciliarios.Margin = new Padding(4, 3, 4, 3);
             gbDatosDomiciliarios.Name = "gbDatosDomiciliarios";
             gbDatosDomiciliarios.Padding = new Padding(4, 3, 4, 3);
-            gbDatosDomiciliarios.Size = new Size(790, 271);
+            gbDatosDomiciliarios.Size = new Size(790, 185);
             gbDatosDomiciliarios.TabIndex = 0;
             gbDatosDomiciliarios.TabStop = false;
             gbDatosDomiciliarios.Text = "Datos Domiciliarios";
             // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            label3.Location = new Point(5, 201);
-            label3.Margin = new Padding(4, 0, 4, 0);
-            label3.Name = "label3";
-            label3.Size = new Size(139, 18);
-            label3.TabIndex = 70;
-            label3.Text = "Dirección Completa";
-            // 
             // txtDireccionCompleta
             // 
-            txtDireccionCompleta.Location = new Point(7, 225);
-            txtDireccionCompleta.Margin = new Padding(4, 3, 4, 3);
+            txtDireccionCompleta.Location = new Point(158, 146);
             txtDireccionCompleta.Name = "txtDireccionCompleta";
-            txtDireccionCompleta.Size = new Size(775, 21);
-            txtDireccionCompleta.TabIndex = 69;
+            txtDireccionCompleta.Size = new Size(616, 21);
+            txtDireccionCompleta.TabIndex = 73;
+            // 
+            // lblDireccionCompleta
+            // 
+            lblDireccionCompleta.AutoSize = true;
+            lblDireccionCompleta.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
+            lblDireccionCompleta.Location = new Point(8, 147);
+            lblDireccionCompleta.Margin = new Padding(4, 0, 4, 0);
+            lblDireccionCompleta.Name = "lblDireccionCompleta";
+            lblDireccionCompleta.Size = new Size(143, 18);
+            lblDireccionCompleta.TabIndex = 72;
+            lblDireccionCompleta.Text = "Dirección Completa:";
             // 
             // lblDepartamento
             // 
             lblDepartamento.AutoSize = true;
             lblDepartamento.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblDepartamento.Location = new Point(424, 134);
+            lblDepartamento.Location = new Point(495, 85);
             lblDepartamento.Margin = new Padding(4, 0, 4, 0);
             lblDepartamento.Name = "lblDepartamento";
             lblDepartamento.Size = new Size(102, 18);
@@ -1085,17 +1138,17 @@
             // 
             // txtDepartamento
             // 
-            txtDepartamento.Location = new Point(427, 157);
+            txtDepartamento.Location = new Point(495, 104);
             txtDepartamento.Margin = new Padding(4, 3, 4, 3);
             txtDepartamento.Name = "txtDepartamento";
-            txtDepartamento.Size = new Size(204, 21);
+            txtDepartamento.Size = new Size(137, 21);
             txtDepartamento.TabIndex = 67;
             // 
             // lblCiudad
             // 
             lblCiudad.AutoSize = true;
             lblCiudad.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblCiudad.Location = new Point(234, 64);
+            lblCiudad.Location = new Point(265, 26);
             lblCiudad.Margin = new Padding(4, 0, 4, 0);
             lblCiudad.Name = "lblCiudad";
             lblCiudad.Size = new Size(54, 18);
@@ -1104,50 +1157,49 @@
             // 
             // txtCiudad
             // 
-            txtCiudad.Location = new Point(234, 88);
+            txtCiudad.Location = new Point(265, 47);
             txtCiudad.Margin = new Padding(4, 3, 4, 3);
             txtCiudad.Name = "txtCiudad";
-            txtCiudad.Size = new Size(176, 21);
+            txtCiudad.Size = new Size(235, 21);
             txtCiudad.TabIndex = 65;
             // 
             // txtColonia
             // 
-            txtColonia.Location = new Point(525, 88);
+            txtColonia.Location = new Point(8, 104);
             txtColonia.Margin = new Padding(4, 3, 4, 3);
             txtColonia.Name = "txtColonia";
-            txtColonia.Size = new Size(257, 21);
+            txtColonia.Size = new Size(249, 21);
             txtColonia.TabIndex = 56;
             // 
             // txtMunicipio
             // 
-            txtMunicipio.Location = new Point(418, 88);
+            txtMunicipio.Location = new Point(521, 47);
             txtMunicipio.Margin = new Padding(4, 3, 4, 3);
             txtMunicipio.Name = "txtMunicipio";
-            txtMunicipio.Size = new Size(99, 21);
+            txtMunicipio.Size = new Size(253, 21);
             txtMunicipio.TabIndex = 55;
             // 
             // txtEstado
             // 
-            txtEstado.Location = new Point(81, 88);
+            txtEstado.Location = new Point(86, 47);
             txtEstado.Margin = new Padding(4, 3, 4, 3);
             txtEstado.Name = "txtEstado";
-            txtEstado.Size = new Size(145, 21);
+            txtEstado.Size = new Size(171, 21);
             txtEstado.TabIndex = 54;
-            txtEstado.TextChanged += txtEstado_TextChanged;
             // 
             // txtCP
             // 
-            txtCP.Location = new Point(8, 88);
+            txtCP.Location = new Point(8, 47);
             txtCP.Margin = new Padding(4, 3, 4, 3);
             txtCP.Name = "txtCP";
-            txtCP.Size = new Size(64, 21);
+            txtCP.Size = new Size(69, 21);
             txtCP.TabIndex = 53;
             // 
             // lblEstado
             // 
             lblEstado.AutoSize = true;
             lblEstado.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblEstado.Location = new Point(81, 64);
+            lblEstado.Location = new Point(86, 26);
             lblEstado.Margin = new Padding(4, 0, 4, 0);
             lblEstado.Name = "lblEstado";
             lblEstado.Size = new Size(55, 18);
@@ -1156,27 +1208,27 @@
             // 
             // mskdtxtNoInterior
             // 
-            mskdtxtNoInterior.Location = new Point(115, 157);
+            mskdtxtNoInterior.Location = new Point(373, 104);
             mskdtxtNoInterior.Margin = new Padding(4, 3, 4, 3);
             mskdtxtNoInterior.Mask = "00000";
             mskdtxtNoInterior.Name = "mskdtxtNoInterior";
-            mskdtxtNoInterior.Size = new Size(96, 21);
+            mskdtxtNoInterior.Size = new Size(110, 21);
             mskdtxtNoInterior.TabIndex = 43;
             // 
             // mskdtxtNoExterior
             // 
-            mskdtxtNoExterior.Location = new Point(9, 157);
+            mskdtxtNoExterior.Location = new Point(265, 104);
             mskdtxtNoExterior.Margin = new Padding(4, 3, 4, 3);
             mskdtxtNoExterior.Mask = "00000";
             mskdtxtNoExterior.Name = "mskdtxtNoExterior";
-            mskdtxtNoExterior.Size = new Size(96, 21);
+            mskdtxtNoExterior.Size = new Size(100, 21);
             mskdtxtNoExterior.TabIndex = 42;
             // 
             // lblReferencias
             // 
             lblReferencias.AutoSize = true;
             lblReferencias.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblReferencias.Location = new Point(216, 135);
+            lblReferencias.Location = new Point(640, 83);
             lblReferencias.Margin = new Padding(4, 0, 4, 0);
             lblReferencias.Name = "lblReferencias";
             lblReferencias.Size = new Size(87, 18);
@@ -1185,28 +1237,17 @@
             // 
             // txtReferencias
             // 
-            txtReferencias.Location = new Point(219, 158);
+            txtReferencias.Location = new Point(640, 104);
             txtReferencias.Margin = new Padding(4, 3, 4, 3);
             txtReferencias.Name = "txtReferencias";
-            txtReferencias.Size = new Size(204, 21);
+            txtReferencias.Size = new Size(134, 21);
             txtReferencias.TabIndex = 6;
-            // 
-            // lblFechaUltimaMod
-            // 
-            lblFechaUltimaMod.AutoSize = true;
-            lblFechaUltimaMod.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            lblFechaUltimaMod.Location = new Point(201, 25);
-            lblFechaUltimaMod.Margin = new Padding(4, 0, 4, 0);
-            lblFechaUltimaMod.Name = "lblFechaUltimaMod";
-            lblFechaUltimaMod.Size = new Size(80, 18);
-            lblFechaUltimaMod.TabIndex = 39;
-            lblFechaUltimaMod.Text = "00/00/0000";
             // 
             // lblColonia
             // 
             lblColonia.AutoSize = true;
             lblColonia.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblColonia.Location = new Point(522, 63);
+            lblColonia.Location = new Point(8, 83);
             lblColonia.Margin = new Padding(4, 0, 4, 0);
             lblColonia.Name = "lblColonia";
             lblColonia.Size = new Size(59, 18);
@@ -1217,7 +1258,7 @@
             // 
             lblCP.AutoSize = true;
             lblCP.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblCP.Location = new Point(9, 64);
+            lblCP.Location = new Point(8, 26);
             lblCP.Margin = new Padding(4, 0, 4, 0);
             lblCP.Name = "lblCP";
             lblCP.Size = new Size(37, 18);
@@ -1228,7 +1269,7 @@
             // 
             lblNoInterior.AutoSize = true;
             lblNoInterior.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblNoInterior.Location = new Point(112, 133);
+            lblNoInterior.Location = new Point(373, 83);
             lblNoInterior.Margin = new Padding(4, 0, 4, 0);
             lblNoInterior.Name = "lblNoInterior";
             lblNoInterior.Size = new Size(65, 18);
@@ -1238,35 +1279,24 @@
             // lblMunicipio
             // 
             lblMunicipio.AutoSize = true;
-            lblMunicipio.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblMunicipio.Location = new Point(418, 48);
+            lblMunicipio.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            lblMunicipio.Location = new Point(521, 26);
             lblMunicipio.Margin = new Padding(4, 0, 4, 0);
             lblMunicipio.Name = "lblMunicipio";
-            lblMunicipio.Size = new Size(79, 18);
+            lblMunicipio.Size = new Size(157, 18);
             lblMunicipio.TabIndex = 31;
-            lblMunicipio.Text = "Municipio /";
+            lblMunicipio.Text = "Municipio / Delegacion";
             // 
             // lblNoExterior
             // 
             lblNoExterior.AutoSize = true;
             lblNoExterior.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblNoExterior.Location = new Point(6, 133);
+            lblNoExterior.Location = new Point(265, 85);
             lblNoExterior.Margin = new Padding(4, 0, 4, 0);
             lblNoExterior.Name = "lblNoExterior";
             lblNoExterior.Size = new Size(71, 18);
             lblNoExterior.TabIndex = 28;
             lblNoExterior.Text = "# Exterior";
-            // 
-            // lblUltimaModDePersonal
-            // 
-            lblUltimaModDePersonal.AutoSize = true;
-            lblUltimaModDePersonal.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            lblUltimaModDePersonal.Location = new Point(5, 25);
-            lblUltimaModDePersonal.Margin = new Padding(4, 0, 4, 0);
-            lblUltimaModDePersonal.Name = "lblUltimaModDePersonal";
-            lblUltimaModDePersonal.Size = new Size(162, 18);
-            lblUltimaModDePersonal.TabIndex = 15;
-            lblUltimaModDePersonal.Text = "Última modificación:";
             // 
             // toolStrip1
             // 
@@ -1380,7 +1410,7 @@
             // 
             // btnAgregarEmpleado
             // 
-            btnAgregarEmpleado.Location = new Point(1436, 27);
+            btnAgregarEmpleado.Location = new Point(1436, 28);
             btnAgregarEmpleado.Margin = new Padding(4, 3, 4, 3);
             btnAgregarEmpleado.Name = "btnAgregarEmpleado";
             btnAgregarEmpleado.Size = new Size(121, 35);
@@ -1407,7 +1437,7 @@
             // 
             dtpFechaIngreso.CustomFormat = "dd/MM/yyyy";
             dtpFechaIngreso.Format = DateTimePickerFormat.Custom;
-            dtpFechaIngreso.Location = new Point(1170, 47);
+            dtpFechaIngreso.Location = new Point(1163, 79);
             dtpFechaIngreso.Margin = new Padding(4, 3, 4, 3);
             dtpFechaIngreso.Name = "dtpFechaIngreso";
             dtpFechaIngreso.Size = new Size(112, 23);
@@ -1419,51 +1449,18 @@
             dtpFechaBaja.Checked = false;
             dtpFechaBaja.CustomFormat = "dd/MM/yyyy";
             dtpFechaBaja.Format = DateTimePickerFormat.Custom;
-            dtpFechaBaja.Location = new Point(1170, 76);
+            dtpFechaBaja.Location = new Point(1425, 79);
             dtpFechaBaja.Margin = new Padding(4, 3, 4, 3);
             dtpFechaBaja.Name = "dtpFechaBaja";
             dtpFechaBaja.Size = new Size(112, 23);
             dtpFechaBaja.TabIndex = 62;
             dtpFechaBaja.TabStop = false;
             // 
-            // lblAntiguedad
-            // 
-            lblAntiguedad.AutoSize = true;
-            lblAntiguedad.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblAntiguedad.Location = new Point(1309, 79);
-            lblAntiguedad.Name = "lblAntiguedad";
-            lblAntiguedad.Size = new Size(84, 18);
-            lblAntiguedad.TabIndex = 63;
-            lblAntiguedad.Text = "Antigüedad:";
-            // 
-            // lblAntiguedadDelEmpleado
-            // 
-            lblAntiguedadDelEmpleado.AutoSize = true;
-            lblAntiguedadDelEmpleado.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            lblAntiguedadDelEmpleado.Location = new Point(1392, 79);
-            lblAntiguedadDelEmpleado.Name = "lblAntiguedadDelEmpleado";
-            lblAntiguedadDelEmpleado.Size = new Size(104, 18);
-            lblAntiguedadDelEmpleado.TabIndex = 64;
-            lblAntiguedadDelEmpleado.Text = "ANTIGÜEDAD";
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Italic);
-            label4.Location = new Point(418, 64);
-            label4.Margin = new Padding(4, 0, 4, 0);
-            label4.Name = "label4";
-            label4.Size = new Size(82, 18);
-            label4.TabIndex = 71;
-            label4.Text = "Delegación";
-            // 
             // FormEDICIONCENTRALPERSONAL
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1575, 669);
-            Controls.Add(lblAntiguedadDelEmpleado);
-            Controls.Add(lblAntiguedad);
             Controls.Add(dtpFechaBaja);
             Controls.Add(dtpFechaIngreso);
             Controls.Add(btnBuscarEnDGV);
@@ -1485,6 +1482,7 @@
             Name = "FormEDICIONCENTRALPERSONAL";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Edición de Personal";
+            FormClosing += FormEDICIONCENTRALPERSONAL_FormClosing;
             Load += FormEDICIONCENTRALPERSONAL_Load;
             ((System.ComponentModel.ISupportInitialize)dgvEditPersonal).EndInit();
             gbDatosPersonales.ResumeLayout(false);
@@ -1496,6 +1494,8 @@
             gbContactoEmpresa.PerformLayout();
             gbFiscales.ResumeLayout(false);
             gbFiscales.PerformLayout();
+            panelLINKSAT.ResumeLayout(false);
+            panelLINKSAT.PerformLayout();
             gpContactoPersonal.ResumeLayout(false);
             gpContactoPersonal.PerformLayout();
             gbDatosDomiciliarios.ResumeLayout(false);
@@ -1626,8 +1626,8 @@
         private Label label1;
         private TextBox txtPuesto;
         private Label lblPuesto;
-        private Label label3;
         private TextBox txtDireccionCompleta;
-        private Label label4;
+        private Label lblDireccionCompleta;
+        private Panel panelLINKSAT;
     }
 }

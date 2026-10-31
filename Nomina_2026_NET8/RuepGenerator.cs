@@ -1,9 +1,11 @@
-﻿// RuepGenerator.cs — VERSION LIMPIA para .NET 8
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Globalization;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Nomina_2026_NET8
 {
@@ -42,169 +44,288 @@ namespace Nomina_2026_NET8
             );
         }
 
+
         public void Generar(string rutaTrabajo)
         {
             if (!Directory.Exists(rutaTrabajo))
-                throw new DirectoryNotFoundException("La ruta de trabajo no existe.");
+                throw new DirectoryNotFoundException(rutaTrabajo);
 
-            // ── Verificar archivos requeridos ─────────────────────────
-            var archivos = new Dictionary<string, string>
+            string destino = Path.Combine(rutaTrabajo, "RUEP.dat");
+
+            // No sobrescribir un expediente existente.
+            if (File.Exists(destino))
+                throw new IOException("Ya existe RUEP.dat. No se sobrescribirá.");
+
+            // Los String * N de VB6 utilizan ANSI.
+            Encoding ansi = Encoding.GetEncoding(1252);
+
+            // ===========================================
+            // LECTURA DE REGISTROS BINARIOS
+            // ===========================================
+
+            List<byte[]> Leer(string nombre, int tamano, bool obligatorio = true)
             {
-                ["empresa"] = Path.Combine(rutaTrabajo, "empresa.dno"),
-                ["empcomp"] = Path.Combine(rutaTrabajo, "Empcomp.dno"),
-                ["personal"] = Path.Combine(rutaTrabajo, "personal.dno"),
-                ["perotros"] = Path.Combine(rutaTrabajo, "PerOtre.dno"),
-                ["perscfdi"] = Path.Combine(rutaTrabajo, "Perscfdi.dno"),
-                ["banamex"] = Path.Combine(rutaTrabajo, "Bnxcla.dno"),
-            };
+                string ruta = Path.Combine(rutaTrabajo, nombre);
 
-            foreach (var k in new[] { "empresa", "empcomp", "personal", "perotros", "perscfdi", "banamex" })
-                if (!File.Exists(archivos[k]))
-                    throw new FileNotFoundException("Archivo requerido no encontrado: " + archivos[k]);
-
-            // maestro.dno es OPCIONAL: según la guía no afecta sueldo/ISR/IMSS, así que
-            // su ausencia no debe bloquear la generación del RUEP — simplemente los
-            // empleados quedan sin distribución por obra.
-            string rutaMaestro = Path.Combine(rutaTrabajo, "maestro.dno");
-
-            // ── Empresa ───────────────────────────────────────────────
-            var empresaRaw = ReadLastRecord(archivos["empresa"], EmpresaSize) ?? throw new Exception("Error leyendo empresa.dno");
-
-            string nombreEmpresa = DecodeField(empresaRaw, 0, 60);
-            short anoFiscal = BitConverter.ToInt16(empresaRaw, 60);
-            long umaPorDiaRaw = BitConverter.ToInt64(empresaRaw, 62);
-            long salarioMinimoRaw = BitConverter.ToInt64(empresaRaw, 70);
-            string fechaActualizacion = DecodeField(empresaRaw, 78, 14);
-
-            // 🔧 ResolverIdEmpresa eliminado — derivamos desde BDSyncService
-            string claveEmpresa = BDSyncService.ResolverClaveEmpresa(nombreEmpresa);
-            int idEmpresa = ResolverIdDesdeClaveEmpresa(claveEmpresa);
-
-            // ── Empresa complemento ───────────────────────────────────
-            var empcompRaw = ReadLastRecord(archivos["empcomp"], EmpcompSize);
-            object datosFiscales = null;
-
-            if (empcompRaw != null)
-            {
-                datosFiscales = new Dictionary<string, object>
+                if (!File.Exists(ruta))
                 {
-                    ["rfc_empresa"] = DecodeField(empcompRaw, 0, 25),
-                    ["registro_patronal"] = "",     // 🗑️ duplicado eliminado
-                    ["lugar_expedicion"] = "",
-                    ["regimen_fiscal"] = "",
-                    ["direccion"] = DecodeField(empcompRaw, 25, 70),
-                    ["representante_legal"] = new Dictionary<string, object>
-                    {
-                        ["apellido_paterno"] = DecodeField(empcompRaw, 95, 20),
-                        ["apellido_materno"] = DecodeField(empcompRaw, 115, 20),
-                        ["nombre"] = DecodeField(empcompRaw, 135, 20),
-                        ["rfc_representante"] = DecodeField(empcompRaw, 155, 25),
-                        ["curp"] = DecodeField(empcompRaw, 180, 25)
-                    },
-                    ["banamex"] = new Dictionary<string, object>
-                    {
-                        ["sucursal"] = DecodeField(empcompRaw, 205, 4),
-                        ["cuenta"] = DecodeField(empcompRaw, 209, 12),
-                        ["cliente"] = DecodeField(empcompRaw, 223, 12)
-                    }
-                };
+                    if (obligatorio)
+                        throw new FileNotFoundException("Falta archivo obligatorio: " + nombre);
+
+                    return new List<byte[]>();
+                }
+
+                byte[] datos = File.ReadAllBytes(ruta);
+
+                if (datos.Length % tamano != 0)
+                    throw new InvalidDataException($"{nombre}: tamaño de archivo incorrecto. No se continuará para evitar cruzar empleados.");
+
+                var registros = new List<byte[]>();
+
+                for (int i = 0; i < datos.Length; i += tamano)
+                {
+                    byte[] registro = new byte[tamano];
+                    Buffer.BlockCopy(datos, i, registro, 0, tamano);
+                    registros.Add(registro);
+                }
+
+                return registros;
             }
 
-            // ── Leer listas de registros ──────────────────────────────
-            var personalList = ReadAllRecords(archivos["personal"], PersonalSize);
-            var otrosList = ReadAllRecords(archivos["perotros"], OtrosSize);
-            var cfdiList = ReadAllRecords(archivos["perscfdi"], CfdiSize);
-            var bnxList = ReadAllRecords(archivos["banamex"], BanamexSize);
-            var maestroList = File.Exists(rutaMaestro) ? ReadAllRecords(rutaMaestro, MaestroSize) : new List<byte[]>();
-
-            // ── Construir empleados ───────────────────────────────────
-            var empleados = new List<Dictionary<string, object>>();
-
-            for (int i = 0; i < personalList.Count; i++)
+            byte[] Posicion(List<byte[]> lista, int indice)
             {
-                var per = personalList[i];
+                return indice >= 0 && indice < lista.Count ? lista[indice] : null;
+            }
 
-                string nombre = DecodeField(per, 0, 20);
-                string ap_p = DecodeField(per, 20, 20);
-                string ap_m = DecodeField(per, 40, 20);
-                string rfc = DecodeField(per, 60, 18);
-                string imss = DecodeField(per, 78, 18);
-                string fechaAlta = DecodeField(per, 96, 12);
-                string fechaBaja = DecodeField(per, 108, 12);
+            string Texto(byte[] registro, int inicio, int longitud)
+            {
+                if (registro == null)
+                    return "";
 
-                if (string.IsNullOrWhiteSpace(nombre) &&
-                    string.IsNullOrWhiteSpace(ap_p)) continue;
+                return ansi.GetString(registro, inicio, longitud).Trim(' ', '\0');
+            }
 
-                long sueldoRaw = BitConverter.ToInt64(per, 120);
-                long viaticosRaw = BitConverter.ToInt64(per, 128);
-                long otrasRaw = BitConverter.ToInt64(per, 136);
+            decimal Moneda(byte[] registro, int inicio)
+            {
+                if (registro == null)
+                    return 0m;
 
-                decimal sueldo = CurrencyVB6FromRaw(sueldoRaw);
-                decimal viaticos = CurrencyVB6FromRaw(viaticosRaw);
-                decimal otras = CurrencyVB6FromRaw(otrasRaw);
+                return BitConverter.ToInt64(registro, inicio) / 10000m;
+            }
 
-                string banamex = i < bnxList.Count ? DecodeField(bnxList[i], 0, 16) : "";
+            string FechaPersonal(string fecha)
+            {
+                if (string.IsNullOrWhiteSpace(fecha) || fecha == "0" || fecha == "00000000" || fecha == "00/00/0000")
+                    return "";
 
-                string curp = i < otrosList.Count ? DecodeField(otrosList[i], 0, 30) : "";
-                string cfdiDir = i < cfdiList.Count ? DecodeField(cfdiList[i], 0, 100) : "";
-                string cfdiCol = i < cfdiList.Count ? DecodeField(cfdiList[i], 100, 100) : "";
-                string cfdiCiu = i < cfdiList.Count ? DecodeField(cfdiList[i], 200, 100) : "";
-                string cfdiEst = i < cfdiList.Count ? DecodeField(cfdiList[i], 300, 64) : "";
-                string cfdiDel = i < cfdiList.Count ? DecodeField(cfdiList[i], 364, 64) : "";
-                string cfdiCP = i < cfdiList.Count ? DecodeField(cfdiList[i], 428, 6) : "";
-                string correo = i < cfdiList.Count ? DecodeField(cfdiList[i], 434, 64) : "";
+                return fecha;
+            }
 
-                var obras = i < maestroList.Count ? ReadMaestroObras(maestroList[i]) : new List<Dictionary<string, object>>();
+            string FechaEmpresa(string valor)
+            {
+                if (string.IsNullOrWhiteSpace(valor) || valor.Trim('0').Length == 0)
+                    return "";
 
-                empleados.Add(new Dictionary<string, object>
+                if (DateTime.TryParseExact(valor, "ddMMyyyyHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fecha))
                 {
-                    ["idEmpleado"] = i + 1,
+                    return fecha.ToString("dd/MM/yyyy");
+                }
+
+                return valor;
+            }
+
+            int ObtenerIdEmpresa(string nombre)
+            {
+                string n = nombre.ToUpperInvariant();
+
+                if (n.Contains("SACMAG")) return 1;
+                if (n.Contains("COORDINADORA") || n.Contains("CORDINA")) return 2;
+                if (n.Contains("SUPERVISA")) return 3;
+                if (n.Contains("CONTROL")) return 4;
+                if (n.Contains("SUPTER") || n.Contains("SUPT")) return 5;
+                if (n.Contains("CONSULTE")) return 6;
+                if (n.Contains("INGENIAL")) return 7;
+                if (n.Contains("GEOAMBIENTE")) return 8;
+                if (n.Contains("EPESA")) return 9;
+
+                throw new InvalidDataException("Empresa no reconocida: " + nombre);
+            }
+
+            // ===========================================
+            // ARCHIVOS DE EMPRESA
+            // ===========================================
+
+            var empresas = Leer("empresa.dno", 92);
+            var complementos = Leer("Empcomp.dno", 235);
+            var cfdiEmpresa = Leer("EMP_CFDI.DNO", 102);
+
+            if (empresas.Count == 0 || complementos.Count == 0 || cfdiEmpresa.Count == 0)
+            {
+                throw new InvalidDataException("Faltan registros de configuración empresarial.");
+            }
+
+            // VB6 obtiene la última posición de empresa.dno
+            // y la primera de los archivos complementarios.
+            byte[] emp = empresas[empresas.Count - 1];
+            byte[] comp = complementos[0];
+            byte[] timbre = cfdiEmpresa[0];
+
+            // ===========================================
+            // ARCHIVOS DE EMPLEADOS
+            // ===========================================
+
+            var personal = Leer("personal.dno", 152);
+            var otros = Leer("PerOtre.dno", 120);
+            var domicilios = Leer("Perscfdi.dno", 498);
+            var tarjetas = Leer("Bnxcla.dno", 16, false);
+
+            if (personal.Count == 0)
+                throw new InvalidDataException("personal.dno no contiene empleados.");
+
+            // ===========================================
+            // ESTRUCTURA GENERAL RUEP V9
+            // ===========================================
+
+            string nombreEmpresa = Texto(emp, 0, 60);
+
+            JObject ruep = new JObject
+            {
+                ["idEmpresa"] = ObtenerIdEmpresa(nombreEmpresa),
+                ["nombre"] = nombreEmpresa,
+                ["anio_fiscal"] = BitConverter.ToInt16(emp, 60),
+                ["uma_por_dia"] = Moneda(emp, 62),
+                ["salario_minimo"] = Moneda(emp, 70),
+                ["fecha_actualizacion"] = FechaEmpresa(Texto(emp, 78, 14)),
+                ["modificado_por"] = "",
+                ["datos_fiscales"] = new JObject
+                {
+                    ["rfc_empresa"] = Texto(comp, 0, 25),
+                    ["direccion_empresa"] = Texto(comp, 25, 70),
+                    ["registro_patronal_empresa"] = Texto(timbre, 16, 32),
+                    ["regimen_fiscal"] = "",
+
+                    ["representante_legal_empresa"] = new JObject
+                    {
+                        ["apellido_paterno"] = Texto(comp, 95, 20),
+                        ["apellido_materno"] = Texto(comp, 115, 20),
+                        ["nombre"] = Texto(comp, 135, 20),
+                        ["rfc_representante_legal"] = Texto(comp, 155, 25),
+                        ["curp_representante_legal"] = Texto(comp, 180, 25)
+                    },
+
+                    ["banamex"] = new JObject
+                    {
+                        ["sucursal"] = Texto(comp, 205, 4),
+                        ["cuenta"] = Texto(comp, 209, 12),
+                        ["cliente"] = Texto(comp, 223, 12)
+                    }
+                },
+
+                ["cfdi_nomina"] = new JObject
+                {
+                    ["folio"] = BitConverter.ToInt32(timbre, 0),
+                    ["serie"] = Texto(timbre, 4, 10),
+                    ["consecutivo"] = BitConverter.ToInt16(timbre, 14),
+                    ["riesgo_imss"] = Texto(timbre, 48, 20)
+                },
+
+                ["personal"] = new JArray()
+            };
+
+            JArray empleados = (JArray)ruep["personal"];
+
+            // ===========================================
+            // CONSTRUIR EMPLEADOS SEGÚN POSICIÓN FÍSICA
+            // ===========================================
+
+            int totalPosiciones = Math.Max(Math.Max(personal.Count, otros.Count), Math.Max(domicilios.Count, tarjetas.Count));
+
+            for (int i = 0; i < totalPosiciones; i++)
+            {
+                byte[] p = Posicion(personal, i);
+                byte[] o = Posicion(otros, i);
+                byte[] d = Posicion(domicilios, i);
+                byte[] b = Posicion(tarjetas, i);
+
+                string nombre = Texto(p, 0, 20);
+                string apellidoP = Texto(p, 20, 20);
+                string apellidoM = Texto(p, 40, 20);
+                string rfc = Texto(p, 60, 18);
+                string nss = Texto(p, 78, 18);
+                string curp = Texto(o, 0, 30);
+
+                bool tieneIdentidad = false;
+
+                foreach (string valor in new[] { nombre, apellidoP, apellidoM, rfc, nss })
+                {
+                    if (!string.IsNullOrWhiteSpace(valor) && valor.Trim('0').Length > 0)
+                    {
+                        tieneIdentidad = true;
+                        break;
+                    }
+                }
+
+                bool curpPlausible = Regex.IsMatch(curp, @"^[A-ZÑ&]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$", RegexOptions.IgnoreCase);
+
+                if (!tieneIdentidad && !curpPlausible)
+                    continue;
+
+                string fechaAlta = FechaPersonal(Texto(p, 96, 12));
+                string fechaBaja = FechaPersonal(Texto(p, 108, 12));
+                string tarjeta = Texto(b, 0, 16);
+
+                if (tarjeta.Trim('0').Length == 0)
+                    tarjeta = "";
+
+                string correo = Texto(d, 434, 64);
+                bool correoEmpresarial = correo.IndexOf('@') >= 0 && correo.IndexOf('@') == correo.LastIndexOf('@') && correo.EndsWith("@grupo-sacmag.com.mx", StringComparison.OrdinalIgnoreCase);
+
+                // Cada posición conserva su ID original.
+                // No usar empleados.Count + 1.
+                int idEmpleado = i + 1;
+
+                JObject registro = new JObject
+                {
+                    ["idEmpleado"] = idEmpleado,
                     ["nombre"] = nombre,
-                    ["apellido_paterno"] = ap_p,
-                    ["apellido_materno"] = ap_m,
+                    ["apellido_paterno"] = apellidoP,
+                    ["apellido_materno"] = apellidoM,
                     ["rfc"] = rfc,
-                    ["imss"] = imss,
+                    ["nss_imss"] = nss,
                     ["fecha_alta"] = fechaAlta,
                     ["fecha_baja"] = fechaBaja,
-                    ["es_reingreso"] = false,
-                    ["fecha_reingreso_alta"] = "",
-                    ["fecha_reingreso_baja"] = "",
-                    ["respeta_antiguedad"] = true,
-                    ["estatus_laboral"] = string.IsNullOrWhiteSpace(fechaBaja) ? "ACTIVO" : "BAJA",
-                    ["riesgo_imss"] = (object)null,
-                    ["forma_pago_sat"] = (object)null,
-                    ["departamento"] = (object)null,
-                    ["puesto"] = (object)null,
-                    ["tipo_contrato"] = (object)null,
-                    ["tipo_jornada"] = (object)null,
-                    // salario_integrado se deja SIN establecer (null): RuepService lo
-                    // calcula la primera vez que se carga el RUEP y lo persiste de inmediato.
-                    ["ingresos"] = new Dictionary<string, object>
+
+                    ["ingresos"] = new JObject
                     {
-                        ["sueldo"] = sueldo,
-                        ["viaticos"] = viaticos,
-                        ["otras"] = otras,
+                        ["sueldo"] = Moneda(p, 120),
+                        ["viaticos"] = Moneda(p, 128),
+                        ["otras"] = Moneda(p, 136),
+                        ["integrado"] = Moneda(p, 144)
                     },
-                    ["cfdi"] = new Dictionary<string, object>
+
+                    ["cfdi"] = new JObject
                     {
                         ["curp"] = curp,
-                        ["direccion"] = cfdiDir,
-                        ["colonia"] = cfdiCol,
-                        ["ciudad"] = cfdiCiu,
-                        ["estado"] = cfdiEst,
-                        ["delegacion"] = cfdiDel,
-                        ["cp"] = cfdiCP,
+                        ["direccion"] = Texto(d, 0, 100),
+                        ["colonia"] = Texto(d, 100, 100),
+                        ["ciudad"] = Texto(d, 200, 100),
+                        ["estado"] = Texto(d, 300, 64),
+                        ["delegacion"] = Texto(d, 364, 64),
+                        ["cp"] = Texto(d, 428, 6),
+
                         ["referencias"] = "",
                         ["no_exterior"] = "",
                         ["no_interior"] = "",
-                        ["correo_empresarial"] = correo,
-                        ["correo_personal"] = "",
-                        ["correo_empresa_predeterminado"] = true,
-                        ["link_sat"] = ""
+                        ["tipo_vialidad"] = "",
+
+                        ["correo_empresarial"] = correoEmpresarial ? correo : "",
+                        ["correo_personal"] = correoEmpresarial ? "" : correo,
+                        ["correo_empresa_predeterminado"] = correoEmpresarial
                     },
-                    ["datos_personales"] = new Dictionary<string, object>
+
+                    ["datos_personales"] = new JObject
                     {
-                        ["clabe_banamex"] = banamex,
+                        ["numero_tarjeta_banamex"] = tarjeta,
                         ["telefono_fijo"] = "",
                         ["telefono_movil"] = "",
                         ["lada"] = "",
@@ -213,39 +334,62 @@ namespace Nomina_2026_NET8
                         ["actividad_economica"] = "",
                         ["regimen_fiscal"] = ""
                     },
-                    ["obras"] = obras,
+
+                    ["historial_laboral"] = new JArray
+                    {
+                        new JObject
+                        {
+                            ["idPeriodo"] = 1,
+                            ["tipo_movimiento"] = "MIGRACION_VB6",
+                            ["fecha_alta"] = fechaAlta,
+                            ["fecha_baja"] = fechaBaja,
+                            ["id_empresa_origen"] = JValue.CreateNull(),
+                            ["id_empleado_origen"] = JValue.CreateNull(),
+                            ["respeta_antiguedad"] = JValue.CreateNull()
+                        }
+                    },
+
                     ["fecha_ultima_mod"] = "",
                     ["modificado_por"] = ""
-                });
+                };
+
+                empleados.Add(registro);
             }
 
-            // ── Construir modelo completo ─────────────────────────────
-            var root = new Dictionary<string, object>
-            {
-                ["idEmpresa"] = idEmpresa,
-                ["nombre"] = nombreEmpresa,
-                ["clave_empresa"] = claveEmpresa ?? "",
-                ["ano_fiscal"] = anoFiscal,
-                ["salario_minimo"] = Math.Round(salarioMinimoRaw / 10000m, 2, MidpointRounding.AwayFromZero),
-                ["uma_por_dia"] = Math.Round(umaPorDiaRaw / 10000m, 2, MidpointRounding.AwayFromZero),
-                ["fecha_actualizacion"] = fechaActualizacion,
-                ["modificado_por"] = "",
-                ["datos_fiscales"] = datosFiscales,
-                ["personal"] = empleados
-            };
+            if (empleados.Count == 0)
+                throw new InvalidDataException("No se encontraron empleados identificables.");
 
-            // 🔧 Cifrado delegado a CryptoService — elimina 50 líneas de AES
-            //    manual y la constante AES_KEY_BASE64 duplicada
-            string rutaRUEP = Path.Combine(rutaTrabajo, OUTPUT_FILE);
-            CryptoService.SaveEncrypted(rutaRUEP, root, indented: true);
+            // ===========================================
+            // CIFRAR, VERIFICAR Y PUBLICAR RUEP
+            // ===========================================
+
+            string temporal = Path.Combine(rutaTrabajo, ".ruep_v9_" + Guid.NewGuid().ToString("N") + ".tmp");
+
+            try
+            {
+                CryptoService.SaveEncrypted(temporal, ruep, indented: true);
+
+                // Comprobar que lo escrito se descifra bien.
+                JObject verificado = CryptoService.LoadEncrypted<JObject>(temporal);
+                JObject esperado = JObject.Parse(ruep.ToString(Newtonsoft.Json.Formatting.None));
+
+                if (verificado == null || !JToken.DeepEquals(verificado, esperado))
+                {
+                    throw new InvalidDataException("La verificación del RUEP V9 falló.");
+                }
+
+                // File.Move sin overwrite impide sustituir accidentalmente un expediente existente.
+                File.Move(temporal, destino);
+            }
+            finally
+            {
+                if (File.Exists(temporal))
+                    File.Delete(temporal);
+            }
         }
 
         // ── Helpers privados ──────────────────────────────────────────
-
-        /// <summary>
-        /// Deriva el ID numérico de empresa a partir de la clave resuelta
-        /// por BDSyncService. Elimina la lista _empresaIds duplicada.
-        /// </summary>
+        // Deriva el ID numérico de empresa a partir de la clave resuelta por BDSyncService. Elimina la lista _empresaIds duplicada.
         private static int ResolverIdDesdeClaveEmpresa(string clave)
         {
             return clave switch

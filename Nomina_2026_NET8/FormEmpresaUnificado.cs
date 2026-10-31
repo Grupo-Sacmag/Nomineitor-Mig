@@ -70,8 +70,7 @@ namespace Nomina_2026_NET8
 
             try
             {
-                // 🔧 Modificamos DatosEmpresa directamente — es la misma
-                //    referencia que usa el servicio internamente
+                // 🔧 Modificamos DatosEmpresa directamente — es la misma referencia que usa el servicio internamente
                 var empresa = _service.ObtenerEmpresa();
 
                 empresa.ano_fiscal = int.Parse(mskdtxtAnio.Text);
@@ -118,9 +117,24 @@ namespace Nomina_2026_NET8
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
-            CargarDatosEnControles(_empresaOriginal);
-            SalirModoEdicion();
-            MessageBox.Show("No se realizaron cambios.");
+            try
+            {
+                // Volver a cargar los datos que realmente
+                // existen en RUEP.dat.
+                _service = new RuepService(RutaArchivoEmpresa);
+
+                var empresa = _service.ObtenerEmpresa();
+
+                _empresaOriginal = JsonConvert.DeserializeObject<RuepRoot>(JsonConvert.SerializeObject(empresa));
+                CargarDatosEnControles(empresa);
+                SalirModoEdicion();
+
+                MessageBox.Show("Se restauraron los datos guardados en RUEP.dat.", "Cancelar cambios", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("No fue posible recuperar la información.\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // ── Métodos privados ──────────────────────────────────────────────
@@ -207,16 +221,29 @@ namespace Nomina_2026_NET8
                 return false;
             }
 
-            // Registro patronal — 10 dígitos
-            if (!Regex.IsMatch(txtRegistroPatronal.Text ?? "", @"^\d{10}$"))
+            // ==============================================
+            // REGISTRO PATRONAL - RUEP V9
+            // ==============================================
+
+            string registroPatronal = (txtRegistroPatronal.Text ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(registroPatronal))
             {
-                MessageBox.Show("El registro patronal debe tener exactamente 10 dígitos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Debe indicar el registro patronal de la empresa.", "Registro patronal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtRegistroPatronal.Focus();
+                return false;
+            }
+
+            // El campo original RegPatr de EMP_CFDI.DNO tiene una capacidad de 32 caracteres.
+            if (registroPatronal.Length > 32 || registroPatronal.Any(char.IsControl))
+            {
+                MessageBox.Show("El registro patronal contiene caracteres de control o supera los 32 caracteres permitidos.", "Registro patronal inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtRegistroPatronal.Focus();
                 return false;
             }
 
             // RFC empresa — 🔧 usa la constante compartida
-            if (!RegexRFC.IsMatch(
-                (txtRFCEmpresa.Text ?? "").Trim().ToUpper()))
+            if (!RegexRFC.IsMatch((txtRFCEmpresa.Text ?? "").Trim().ToUpper()))
             {
                 MessageBox.Show("RFC de la empresa inválido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;

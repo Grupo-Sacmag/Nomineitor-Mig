@@ -3,28 +3,36 @@
   "WorkspaceRootPath": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\ruepservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\ruepservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\nomina_2026_net8\\formcaptura.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formcaptura.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\empleadocompleto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\empleadocompleto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\formcaptura.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formcaptura.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\formcaptura.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formcaptura.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\rueproot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\rueproot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\perfilcolumnasnomina.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\perfilcolumnasnomina.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\bdsyncservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\bdsyncservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\formacumulados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formacumulados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\nomina_2026_net8\\formacumulados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formacumulados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|c:\\users\\desarrollo.conta\\desktop\\github\\sacmag\\c#\\nomineitor-mig\\nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA87DAD-18D9-6445-6882-E838C59D8445}|Nomina_2026_NET8\\Nomina_2026_NET8.csproj|solutionrelative:nomina_2026_net8\\formprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,34 +42,111 @@
       "DocumentGroups": [
         {
           "DockedWidth": 332,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "FormPrincipal.cs [Design]",
+              "DocumentIndex": 6,
+              "Title": "FormPrincipal.cs [Dise\u00F1o]",
               "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormPrincipal.cs",
               "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormPrincipal.cs",
-              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormPrincipal.cs [Design]",
-              "RelativeToolTip": "Nomina_2026_NET8\\FormPrincipal.cs [Design]",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormPrincipal.cs [Dise\u00F1o]",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormPrincipal.cs [Dise\u00F1o]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-10-23T23:53:38.647Z",
-              "IsPinned": true,
-              "EditorCaption": " [Design]"
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 7,
               "Title": "FormPrincipal.cs",
               "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormPrincipal.cs",
               "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormPrincipal.cs",
               "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormPrincipal.cs",
               "RelativeToolTip": "Nomina_2026_NET8\\FormPrincipal.cs",
-              "ViewState": "AgIAAGACAAAAAAAAAAAAwHcCAABVAAAAAAAAAA==",
+              "ViewState": "AgIAALADAAAAAAAAAAAjwLEDAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-10-24T00:44:31.797Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "FormAcumulados.cs [Dise\u00F1o]",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormAcumulados.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormAcumulados.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormAcumulados.cs [Dise\u00F1o]",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormAcumulados.cs [Dise\u00F1o]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-28T21:49:45.473Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FormAcumulados.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormAcumulados.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormAcumulados.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormAcumulados.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormAcumulados.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-28T21:49:47.589Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FormCaptura.cs [Dise\u00F1o]",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormCaptura.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormCaptura.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormCaptura.cs [Dise\u00F1o]",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormCaptura.cs [Dise\u00F1o]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-30T17:42:28.737Z",
+              "IsPinned": true,
+              "EditorCaption": " [Dise\u00F1o]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "FormCaptura.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormCaptura.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormCaptura.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormCaptura.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormCaptura.cs",
+              "ViewState": "AgIAAE8IAAAAAAAAAAAcwGMIAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-30T17:45:59.662Z",
               "IsPinned": true,
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FormCaptura.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormCaptura.Designer.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\FormCaptura.Designer.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\FormCaptura.Designer.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\FormCaptura.Designer.cs",
+              "ViewState": "AgIAACcDAAAAAAAAAAAjwD0DAACNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-30T20:48:24.923Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "PerfilColumnasNomina.cs",
+              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\PerfilColumnasNomina.cs",
+              "RelativeDocumentMoniker": "Nomina_2026_NET8\\PerfilColumnasNomina.cs",
+              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\PerfilColumnasNomina.cs",
+              "RelativeToolTip": "Nomina_2026_NET8\\PerfilColumnasNomina.cs",
+              "ViewState": "AgIAAFEAAAAAAAAAAAAcwHcAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-30T20:51:08.266Z",
+              "IsPinned": true
             },
             {
               "$type": "Bookmark",
@@ -78,58 +163,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "EmpleadoCompleto.cs",
-              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\EmpleadoCompleto.cs",
-              "RelativeDocumentMoniker": "Nomina_2026_NET8\\EmpleadoCompleto.cs",
-              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\EmpleadoCompleto.cs",
-              "RelativeToolTip": "Nomina_2026_NET8\\EmpleadoCompleto.cs",
-              "ViewState": "AgIAACIAAAAAAAAAAAAEwC8AAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-26T23:48:35.745Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "RuepService.cs",
-              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\RuepService.cs",
-              "RelativeDocumentMoniker": "Nomina_2026_NET8\\RuepService.cs",
-              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\RuepService.cs",
-              "RelativeToolTip": "Nomina_2026_NET8\\RuepService.cs",
-              "ViewState": "AgIAAMAAAAAAAAAAAAAAwNsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-26T23:42:44.515Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "RuepRoot.cs",
-              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\RuepRoot.cs",
-              "RelativeDocumentMoniker": "Nomina_2026_NET8\\RuepRoot.cs",
-              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\RuepRoot.cs",
-              "RelativeToolTip": "Nomina_2026_NET8\\RuepRoot.cs",
-              "ViewState": "AgIAAKwAAAAAAAAAAIAwwLsAAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-26T23:32:40.005Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "BDSyncService.cs",
-              "DocumentMoniker": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\BDSyncService.cs",
-              "RelativeDocumentMoniker": "Nomina_2026_NET8\\BDSyncService.cs",
-              "ToolTip": "C:\\Users\\desarrollo.conta\\Desktop\\GITHUB\\SACMAG\\C#\\Nomineitor-Mig\\Nomina_2026_NET8\\BDSyncService.cs",
-              "RelativeToolTip": "Nomina_2026_NET8\\BDSyncService.cs",
-              "ViewState": "AgIAAG0AAAAAAAAAAAAAAHgAAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-26T23:32:36.156Z",
-              "EditorCaption": ""
             }
           ]
         },

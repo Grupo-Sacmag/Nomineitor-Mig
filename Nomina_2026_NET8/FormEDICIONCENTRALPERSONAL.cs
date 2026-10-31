@@ -22,6 +22,9 @@ namespace NOMINA_2025
         private Dictionary<Label, Control> _mapaCampos;
         private RuepService _personalService;
         private Dictionary<Control, string> _originalValues = new();
+        private DateTime _fechaIngresoOriginalEdicion;
+        private int? _idEmpleadoAntesDeCaptura;
+        private bool _correoEmpresaPreferidoOriginal;
 
         private bool _mostrarConBaja = false;
         private bool _mostrarSinBaja = true;
@@ -48,11 +51,23 @@ namespace NOMINA_2025
         // ── Constantes para cálculos ──────────────────────────────────────
         private const int DECIMALES_CURRENCY_VB6 = 4;
 
+        private bool _restaurandoVistaEmpleado = false;
+
         private enum EstadoUI { Lectura, VerCFDI, Edicion }
 
         public FormEDICIONCENTRALPERSONAL()
         {
             InitializeComponent();
+
+            // Configurar NSS antes de cargar empleados.
+            mskdNSS.Mask = "00000000000";
+            mskdNSS.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
+
+            // Los números exteriores e interiores pueden contener letras, guiones y otros caracteres.
+            mskdtxtNoExterior.Mask = "";
+            mskdtxtNoInterior.Mask = "";
+
+            FormClosing += FormEDICIONCENTRALPERSONAL_FormClosing;
         }
 
         private void FormEDICIONCENTRALPERSONAL_Load(object sender, EventArgs e)
@@ -117,27 +132,41 @@ namespace NOMINA_2025
 
             if (emp == null)
             {
-                MessageBox.Show(
-                    "No se encontró el empleado seleccionado.",
-                    "Empleado no encontrado",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
+                MessageBox.Show("No se encontró el empleado seleccionado.", "Empleado no encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!EmpleadoTieneBaja(emp))
             {
-                MessageBox.Show(
-                    "Este empleado no tiene baja registrada, por lo tanto no aplica reingreso.",
-                    "Reingreso no aplicable",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
+                MessageBox.Show("Este empleado no tiene baja registrada, por lo tanto no aplica reingreso.", "Reingreso no aplicable", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
+            // =====================================================
+            // PASO 9 - PROTEGER CAMBIOS PENDIENTES
+            // =====================================================
+            // No permitir realizar un reingreso mientras existan
+            // modificaciones de otros campos sin guardar.
+            // El movimiento laboral debe realizarse por separado.
+            // =====================================================
+
+            if (HayCambiosPendientes())
+            {
+                MessageBox.Show("Existen modificaciones pendientes en el expediente.\n\nAntes de realizar el reingreso, guarda o cancela la edición actual.\n\nDespués podrás registrar el movimiento laboral.",
+                    "Cambios pendientes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                return;
+            }
+
+            // =====================================================
+            // DATOS DEL EMPLEADO
+            // =====================================================
+
             string nombreCompleto = $"{emp.ApellidoP} {emp.ApellidoM} {emp.Nombre}".Trim();
+
+            // =====================================================
+            // SELECCIONAR FECHA DE REINGRESO
+            // =====================================================
 
             DialogResult fechaRespuesta = MessageBox.Show(
                 $"Se realizará el reingreso del siguiente empleado:\n\n" +
@@ -152,8 +181,7 @@ namespace NOMINA_2025
                 "Reingresar empleado",
                 MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button1
-            );
+                MessageBoxDefaultButton.Button1);
 
             if (fechaRespuesta == DialogResult.Cancel)
                 return;
@@ -174,6 +202,10 @@ namespace NOMINA_2025
                 fechaReingreso = fechaSeleccionada.Value.Date;
             }
 
+            // =====================================================
+            // PREGUNTAR SI SE RESPETA LA ANTIGÜEDAD
+            // =====================================================
+
             DialogResult antiguedadRespuesta = MessageBox.Show(
                 "¿Deseas respetar la antigüedad original del empleado?\n\n" +
                 "Sí = conservar antigüedad desde la primera fecha de alta\n" +
@@ -182,13 +214,16 @@ namespace NOMINA_2025
                 "Antigüedad del reingreso",
                 MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button1
-            );
+                MessageBoxDefaultButton.Button1);
 
             if (antiguedadRespuesta == DialogResult.Cancel)
                 return;
 
             bool respetaAntiguedad = antiguedadRespuesta == DialogResult.Yes;
+
+            // =====================================================
+            // CONFIRMACIÓN FINAL
+            // =====================================================
 
             DialogResult confirmar = MessageBox.Show(
                 $"Confirma el reingreso:\n\n" +
@@ -198,11 +233,14 @@ namespace NOMINA_2025
                 "La fecha de alta original y la fecha de baja original se conservarán.",
                 "Confirmar reingreso",
                 MessageBoxButtons.OKCancel,
-                MessageBoxIcon.Question
-            );
+                MessageBoxIcon.Question);
 
             if (confirmar != DialogResult.OK)
                 return;
+
+            // =====================================================
+            // REGISTRAR EL REINGRESO EN RUEP V9
+            // =====================================================
 
             ReingresarEmpleado(emp, fechaReingreso, respetaAntiguedad);
         }
@@ -239,6 +277,24 @@ namespace NOMINA_2025
             }
 
             bool esNuevo = !_empleados.Any(x => x.Id == id);
+
+            // Si se eligió una fecha específica de baja, exigir su confirmación antes de guardar.
+            if (_fechaBajaPendienteConfirmacion && !_modoCapturaBaja)
+            {
+                MessageBox.Show("Todavía falta confirmar la fecha de baja.\n\nPresiona nuevamente el botón Dar de Baja para confirmar el movimiento, o pulsa Cancelar.", "Baja pendiente",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                return;
+            }
+
+            // No generar un nuevo guardado ni actualizar
+            // auditoría cuando no hubo cambios reales.
+            if (!esNuevo && !HayCambiosPendientes())
+            {
+                CambiarEstadoUI(EstadoUI.Lectura);
+                _idEmpleadoAntesDeCaptura = null;
+                return;
+            }
 
             if (esNuevo)
             {
@@ -279,58 +335,105 @@ namespace NOMINA_2025
 
             // ── Persistir cambios ──────────────────────────────────────────
             var emp = _empleados.FirstOrDefault(x => x.Id == id);
+
             if (emp == null)
             {
                 emp = new EmpleadoCompleto { Id = id };
                 _empleados.Add(emp);
             }
 
-            AplicarCambiosAlEmpleado(emp, esNuevo);
-            _personalService.GuardarCambios();
-            HuboCambios = true;
+            try
+            {
+                AplicarCambiosAlEmpleado(emp, esNuevo);
 
-            CaptureOriginalValues();
-            MessageBox.Show(esNuevo ? "Empleado agregado correctamente" : "Cambios guardados correctamente", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Primero confirmar la escritura real del expediente.
+                _personalService.GuardarCambios();
+                HuboCambios = true;
+            }
+            catch (Exception ex)
+            {
+                // Restaurar el estado desde el archivo.
+                // Evita mantener un alta fallida en memoria.
+                try
+                {
+                    _personalService = new RuepService(RutaRUEP);
+                    _empleados = _personalService.ObtenerTodos();
+                    _empleadosFiltrados = new List<EmpleadoCompleto>(_empleados);
+
+                    // Si falló un alta nueva, intentar regresar al empleado que estaba seleccionado antes.
+                    // Si falló la edición de uno existente, recuperar ese mismo ID desde el archivo.
+                    int? idRecuperar = esNuevo ? _idEmpleadoAntesDeCaptura : id;
+
+                    RefrescarExpedienteVisible(idRecuperar);
+                }
+                catch (Exception recargaEx)
+                {
+                    MessageBox.Show("No fue posible recuperar el estado del expediente.\n\n" + recargaEx.Message, "Error de recuperación", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    Close();
+                    return;
+                }
+
+                MessageBox.Show("No fue posible guardar los cambios.\n\n" + ex.Message + "\n\nSe ha recargado el expediente desde RUEP.dat.", "Error de guardado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                return;
+            }
 
             RestaurarLabels();
-            HabilitarCamposPersonales(true);
-            AplicarFiltros();
-            SeleccionarEmpleadoEnGrid(id);
 
-            _modoCapturaBaja = false;
-            _fechaBajaPendienteConfirmacion = false;
+            // Volver a mostrar el expediente correspondiente al empleado que acabamos de guardar.
+            RefrescarExpedienteVisible(id);
 
-            CambiarEstadoUI(EstadoUI.Lectura);
-            ActualizarEstadoBotonReingreso();
+            MessageBox.Show(esNuevo ? "Empleado agregado correctamente." : "Cambios guardados correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnCancelarCambios_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("¿Cancelar cambios? No se guardará ninguna modificación.", "Cancelar", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return;
+            DialogResult respuesta = MessageBox.Show("¿Deseas cancelar la operación actual?\n\nLos cambios no guardados serán descartados.", "Cancelar cambios", MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+
+            if (respuesta != DialogResult.OK)
+                return;
+
+            int? idRestaurar = _idEmpleadoAntesDeCaptura;
+
+            // Descartar movimientos preparados.
+            _modoCapturaBaja = false;
+            _fechaBajaPendienteConfirmacion = false;
 
             RestaurarLabels();
             ConfigurarRangoHistorico();
 
-            if (dgvEditPersonal.SelectedRows.Count > 0)
-                dgvEditPersonal_SelectionChanged(null, null);
-
-            MessageBox.Show("No se realizó ningún cambio.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            _modoCapturaBaja = false;
-            _fechaBajaPendienteConfirmacion = false;
+            // Regresar primero a lectura.
             CambiarEstadoUI(EstadoUI.Lectura);
-            ActualizarEstadoBotonBaja();
-            ActualizarEstadoBotonReingreso();
 
-            if (int.TryParse(txtIDActual.Text, out int idCancel))
+            // Volver a construir el listado.
+            AplicarFiltros();
+
+            EmpleadoCompleto restaurado = _empleadosFiltrados?.FirstOrDefault(x => x.Id == idRestaurar) ?? _empleadosFiltrados?.FirstOrDefault();
+
+            if (restaurado != null)
             {
-                var empCancel = _empleados.FirstOrDefault(x => x.Id == idCancel);
-                MostrarCampoFechaBaja(empCancel != null && EmpleadoTieneBaja(empCancel), false);
+                SeleccionarEmpleadoEnGrid(restaurado.Id);
+
+                // Recuperar los datos del objeto existente.
+                CargarEmpleadoEnControles(restaurado);
             }
             else
             {
-                MostrarCampoFechaBaja(false, false);
+                // Ningún empleado coincide con el filtro.
+                LimpiarFormulario();
+                txtIDActual.Text = "";
+
+                HabilitarCamposPersonales(true);
             }
+
+            CaptureOriginalValues();
+
+            _idEmpleadoAntesDeCaptura = null;
+
+            ActualizarEstadoBotonBaja();
+            ActualizarEstadoBotonReingreso();
         }
 
         private void btnMostrarCFDI_Click(object sender, EventArgs e)
@@ -343,9 +446,19 @@ namespace NOMINA_2025
 
         private void btnModificarRegistro_Click(object sender, EventArgs e)
         {
+            if (!int.TryParse(txtIDActual.Text, out int id) || !_empleados.Any(emp => emp.Id == id))
+            {
+                MessageBox.Show("Selecciona un empleado existente antes de modificar su expediente.", "Empleado no seleccionado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _idEmpleadoAntesDeCaptura = id;
+
             ConfigurarTabIndex();
             HabilitarCamposPersonales(false);
             CambiarEstadoUI(EstadoUI.Edicion);
+
+            // Guardar los valores originales para detectar cambios.
             CaptureOriginalValues();
         }
 
@@ -354,6 +467,16 @@ namespace NOMINA_2025
             if (MessageBox.Show("¿Deseas Agregar un nuevo Registro?\n\nLos Campos serán puestos en blanco para su llenado manual.", "Agregar Nuevo Registro",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
+
+            // Recordar el empleado previamente seleccionado.
+            _idEmpleadoAntesDeCaptura = null;
+
+            var filaAnterior = dgvEditPersonal.CurrentRow;
+
+            if (filaAnterior != null && int.TryParse(filaAnterior.Cells["IdArchivo"].Value?.ToString(), out int idAnterior))
+            {
+                _idEmpleadoAntesDeCaptura = idAnterior;
+            }
 
             LimpiarFormulario();
             ConfigurarRangoNuevoIngreso();
@@ -455,6 +578,11 @@ namespace NOMINA_2025
         // ── Eventos de grid y búsqueda ────────────────────────────────────
         private void dgvEditPersonal_SelectionChanged(object sender, EventArgs e)
         {
+            if (_restaurandoVistaEmpleado || _estadoActual == EstadoUI.Edicion)
+            {
+                return;
+            }
+
             if (dgvEditPersonal.SelectedRows.Count == 0) return;
 
             var row = dgvEditPersonal.SelectedRows[0];
@@ -689,6 +817,8 @@ namespace NOMINA_2025
             txtEstado.Text = emp.Estado ?? "";
             txtMunicipio.Text = emp.Municipio ?? "";
             txtColonia.Text = emp.Colonia ?? "";
+
+            // Recuperar la dirección completa desde RUEP V9.
             txtDireccionCompleta.Text = emp.Direccion ?? "";
             txtCorreoElectronicoPersonal.Text = emp.Email ?? "";
             txtEmailEmpresa.Text = emp.EmailEmpresa ?? "";
@@ -699,7 +829,6 @@ namespace NOMINA_2025
             mskdTelFijo.Text = emp.TelefonoFijo ?? "";
             mskdTelMovil.Text = emp.TelefonoMovil ?? "";
             mskdtxtLADATel.Text = (emp.LADA ?? "").Replace("+", "");
-            txtEmailEmpresa.Text = emp.EmailEmpresa ?? "";
             txtTelEmpr.Text = emp.TelefonoEmpresa ?? "";
             txtExt.Text = emp.Extension ?? "";
             txtActividadEcon.Text = emp.ActividadEconomica ?? "";
@@ -719,8 +848,31 @@ namespace NOMINA_2025
 
             lblFechaUltimaMod.Text = string.IsNullOrWhiteSpace(emp.FechaUltimaMod) ? "Sin modificaciones registradas" : $"{emp.FechaUltimaMod}  —  {emp.ModificadoPor}";
 
-            // Un solo método para recalcular y mostrar SDI/ISR
+            // Mantener la presentación actual del ISR estimadoy las rutinas de cálculo existentes.
             RecalcularSDIeISR();
+
+            // Mostrar el SDI que realmente está guardado en RUEP V9, sin sustituirlo por el valor recalculado durante la selección.
+            txtSalarioDiarioIntegrado.Text = emp.SalarioIntegrado.ToString("N2");
+        }
+
+        private void ActualizarCampoSiCambio(bool esNuevo, Control control, Action<string> asignar)
+        {
+            // En registros existentes, conservar el dato original si el usuario no cambió el control.
+            if (!esNuevo && !ValorCambio(control))
+                return;
+
+            string valor;
+
+            if (control == mskdtxtNoExterior || control == mskdtxtNoInterior)
+            {
+                valor = (control.Text ?? "").Trim();
+            }
+            else
+            {
+                valor = GetControlValue(control);
+            }
+
+            asignar(valor);
         }
 
         // Aplica los valores de los controles al objeto EmpleadoCompleto. Extraído de btnGuardarCambios para mayor claridad.
@@ -729,13 +881,22 @@ namespace NOMINA_2025
             string fechaAltaAnterior = emp.FechaAlta ?? "";
             string fechaAltaNueva = dtpFechaIngreso.Value.ToString("dd/MM/yyyy");
 
-            emp.Nombre = txtNombre.Text.Trim();
-            emp.ApellidoP = txtApellidoPaterno.Text.Trim();
-            emp.ApellidoM = txtApellidoMaterno.Text.Trim();
-            emp.RFC = mskdRFC.Text.Trim();
-            emp.CURP = mskdCURP.Text.Trim();
-            emp.NSS = mskdNSS.Text.Trim();
-            emp.FechaAlta = fechaAltaNueva;
+            ActualizarCampoSiCambio(esNuevo, txtNombre, v => emp.Nombre = v);
+            ActualizarCampoSiCambio(esNuevo, txtApellidoPaterno, v => emp.ApellidoP = v);
+            ActualizarCampoSiCambio(esNuevo, txtApellidoMaterno, v => emp.ApellidoM = v);
+            ActualizarCampoSiCambio(esNuevo, mskdRFC, v => emp.RFC = v);
+            ActualizarCampoSiCambio(esNuevo, mskdCURP, v => emp.CURP = v);
+            ActualizarCampoSiCambio(esNuevo, mskdNSS, v => emp.NSS = v);
+
+            // El alta original de un empleado existente no debe alterarse mediante edición general.
+            if (esNuevo)
+            {
+                emp.FechaAlta = fechaAltaNueva;
+            }
+            else if (!string.Equals(fechaAltaAnterior, fechaAltaNueva, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("La fecha de alta original no puede modificarse. Utiliza el procedimiento de reingreso cuando corresponda.");
+            }
 
             if (esNuevo)
             {
@@ -817,33 +978,58 @@ namespace NOMINA_2025
                 txtISRMensual.Text = emp.ISR.ToString("N2");
             }
 
-            emp.CP = txtCP.Text.Trim();
-            emp.Estado = txtEstado.Text.Trim();
-            emp.Municipio = txtMunicipio.Text.Trim();
-            emp.Colonia = txtColonia.Text.Trim();
-            emp.Direccion = txtDireccionCompleta.Text.Trim();
-            emp.Email = txtCorreoElectronicoPersonal.Text.Trim();
-            emp.Referencias = txtReferencias.Text.Trim();
-            emp.NoExterior = mskdtxtNoExterior.Text.Trim();
-            emp.NoInterior = mskdtxtNoInterior.Text.Trim();
-            emp.TelefonoFijo = mskdTelFijo.Text.Trim();
-            emp.TelefonoMovil = mskdTelMovil.Text.Trim();
-            emp.LADA = mskdtxtLADATel.Text.Trim();
-            emp.EmailEmpresa = txtEmailEmpresa.Text.Trim();
-            emp.TelefonoEmpresa = txtTelEmpr.Text.Trim();
-            emp.Extension = txtExt.Text.Trim();
-            emp.ActividadEconomica = txtActividadEcon.Text.Trim();
-            emp.RegimenFiscal = txtRegimen.Text.Trim();
-            emp.Banamex = mskdBANAMEX.Text.Trim();
 
-            // ── Ciudad / Departamento / Puesto / Riesgo IMSS / Link SAT ──────
-            emp.Ciudad = txtCiudad.Text.Trim();
-            emp.Departamento = txtDepartamento.Text.Trim();
-            emp.Puesto = txtPuesto.Text.Trim();
-            emp.RiesgoIMSS = txtRiesgoIMSS.Text.Trim();
-            emp.LinkSAT = (linklblSAT.Tag?.ToString() ?? linklblSAT.Text)?.Trim() ?? "";
+            // ================================================
+            // DOMICILIO
+            // ================================================
+            ActualizarCampoSiCambio(esNuevo, txtCP, v => emp.CP = v);
+            ActualizarCampoSiCambio(esNuevo, txtEstado, v => emp.Estado = v);
+            ActualizarCampoSiCambio(esNuevo, txtMunicipio, v => emp.Municipio = v);
+            ActualizarCampoSiCambio(esNuevo, txtCiudad, v => emp.Ciudad = v);
+            ActualizarCampoSiCambio(esNuevo, txtColonia, v => emp.Colonia = v);
+            ActualizarCampoSiCambio(esNuevo, txtReferencias, v => emp.Referencias = v);
+            ActualizarCampoSiCambio(esNuevo, mskdtxtNoExterior, v => emp.NoExterior = v);
+            ActualizarCampoSiCambio(esNuevo, mskdtxtNoInterior, v => emp.NoInterior = v);
 
-            emp.CorreoEmpresaPredeterminado = chckbCorreoEmpresa.Checked;
+            // ================================================
+            // CONTACTO PERSONAL
+            // ================================================
+            ActualizarCampoSiCambio(esNuevo, txtCorreoElectronicoPersonal, v => emp.Email = v);
+            ActualizarCampoSiCambio(esNuevo, mskdTelFijo, v => emp.TelefonoFijo = v);
+            ActualizarCampoSiCambio(esNuevo, mskdTelMovil, v => emp.TelefonoMovil = v);
+            ActualizarCampoSiCambio(esNuevo, mskdtxtLADATel, v => emp.LADA = v);
+
+            // ================================================
+            // CONTACTO EMPRESARIAL
+            // ================================================
+            ActualizarCampoSiCambio(esNuevo, txtEmailEmpresa, v => emp.EmailEmpresa = v);
+            ActualizarCampoSiCambio(esNuevo, txtTelEmpr, v => emp.TelefonoEmpresa = v);
+            ActualizarCampoSiCambio(esNuevo, txtExt, v => emp.Extension = v);
+
+            // ================================================
+            // DATOS FISCALES Y LABORALES
+            // ================================================
+            ActualizarCampoSiCambio(esNuevo, txtActividadEcon, v => emp.ActividadEconomica = v);
+            ActualizarCampoSiCambio(esNuevo, txtRegimen, v => emp.RegimenFiscal = v);
+            ActualizarCampoSiCambio(esNuevo, txtDepartamento, v => emp.Departamento = v);
+            ActualizarCampoSiCambio(esNuevo, txtPuesto, v => emp.Puesto = v);
+
+            // RiesgoIMSS y LinkSAT no se reasignan.
+            // Se conservan los valores actuales del expediente.
+
+            // ================================================
+            // BANAMEX
+            // ================================================
+            ActualizarCampoSiCambio(esNuevo, mskdBANAMEX, v => emp.Banamex = v);
+
+            // ================================================
+            // CORREO PREDETERMINADO
+            // ================================================
+            if (esNuevo || chckbCorreoEmpresa.Checked != _correoEmpresaPreferidoOriginal)
+            {
+                emp.CorreoEmpresaPredeterminado = chckbCorreoEmpresa.Checked;
+            }
+
             emp.FechaUltimaMod = DateTime.Now.ToString("dd/MM/yyyy");
             emp.ModificadoPor = Environment.UserName;
         }
@@ -943,14 +1129,109 @@ namespace NOMINA_2025
 
         private void SeleccionarEmpleadoEnGrid(int id)
         {
-            foreach (DataGridViewRow row in dgvEditPersonal.Rows)
+            foreach (DataGridViewRow fila in dgvEditPersonal.Rows)
             {
-                if (Convert.ToInt32(row.Cells["IdArchivo"].Value) == id)
+                if (!int.TryParse(fila.Cells["IdArchivo"].Value?.ToString(), out int idFila))
                 {
-                    row.Selected = true;
-                    break;
+                    continue;
                 }
+
+                if (idFila != id)
+                    continue;
+
+                dgvEditPersonal.ClearSelection();
+
+                // Mantener CurrentRow y SelectedRows apuntando al mismo empleado.
+                dgvEditPersonal.CurrentCell = fila.Cells["NumeroEmpleado"];
+                fila.Selected = true;
+
+                return;
             }
+
+            // Si el ID no está visible en el listado, no conservar una selección equivocada.
+            dgvEditPersonal.ClearSelection();
+            dgvEditPersonal.CurrentCell = null;
+        }
+
+        private void RefrescarExpedienteVisible(int? idPreferido)
+        {
+            _restaurandoVistaEmpleado = true;
+
+            try
+            {
+                // Descartar movimientos que solamente estaban preparados en la interfaz.
+                _modoCapturaBaja = false;
+                _fechaBajaPendienteConfirmacion = false;
+
+                CambiarEstadoUI(EstadoUI.Lectura);
+
+                // Reconstruir el listado con los datos actualmente cargados en RuepService.
+                AplicarFiltros();
+
+                EmpleadoCompleto empleadoPreferido = null;
+
+                if (idPreferido.HasValue)
+                {
+                    empleadoPreferido = _empleados.FirstOrDefault(emp => emp.Id == idPreferido.Value);
+                }
+
+                // Un empleado puede dejar de coincidir con el filtro después de una baja o reingreso.
+                // En ese caso, mostrar ambos estados para conservar visible el expediente actualizado.
+                if (empleadoPreferido != null && EmpleadoValidoParaMostrar(empleadoPreferido) && !_empleadosFiltrados.Any(emp => emp.Id == empleadoPreferido.Id))
+                {
+                    _mostrarConBaja = true;
+                    _mostrarSinBaja = true;
+
+                    tsMostrarConBaja.Checked = false;
+                    tsMostrarSinBaja.Checked = false;
+                    tsMostrarAmbos.Checked = true;
+
+                    txtBuscarPersonal.Clear();
+
+                    AplicarFiltros();
+                }
+
+                EmpleadoCompleto empleadoVisible = null;
+
+                if (empleadoPreferido != null)
+                {
+                    empleadoVisible = _empleadosFiltrados.FirstOrDefault(emp => emp.Id == empleadoPreferido.Id);
+                }
+
+                // Si se canceló un alta o el registro ya no existe, mostrar el primer empleado disponible.
+                empleadoVisible ??= _empleadosFiltrados.FirstOrDefault();
+
+                if (empleadoVisible != null)
+                {
+                    SeleccionarEmpleadoEnGrid(empleadoVisible.Id);
+
+                    // Cargar explícitamente el empleado correcto.
+                    CargarEmpleadoEnControles(empleadoVisible);
+                }
+                else
+                {
+                    // No dejar datos del empleado anterior cuando la lista está vacía.
+                    dgvEditPersonal.ClearSelection();
+                    dgvEditPersonal.CurrentCell = null;
+
+                    LimpiarFormulario();
+                    txtIDActual.Text = "";
+
+                    HabilitarCamposPersonales(true);
+                }
+
+                // Registrar únicamente el estado que efectivamente quedó visible.
+                CaptureOriginalValues();
+
+                _idEmpleadoAntesDeCaptura = null;
+            }
+            finally
+            {
+                _restaurandoVistaEmpleado = false;
+            }
+
+            ActualizarEstadoBotonBaja();
+            ActualizarEstadoBotonReingreso();
         }
 
         // ── Estado de la UI ───────────────────────────────────────────────
@@ -1127,7 +1408,10 @@ namespace NOMINA_2025
 
         private void HabilitarCamposPersonales(bool soloLectura)
         {
-            dtpFechaIngreso.Enabled = !soloLectura;
+            // La fecha de alta original solo puede capturarse cuando se está creando un empleado nuevo.
+            // Los reingresos utilizan su propio procedimiento y no deben modificar la primera fecha de alta.
+            bool esAltaNueva = int.TryParse(txtIDActual.Text, out int idActual) && _empleados != null && !_empleados.Any(emp => emp.Id == idActual);
+            dtpFechaIngreso.Enabled = !soloLectura && esAltaNueva;
             txtNombre.ReadOnly = soloLectura;
             txtApellidoPaterno.ReadOnly = soloLectura;
             txtApellidoMaterno.ReadOnly = soloLectura;
@@ -1146,6 +1430,7 @@ namespace NOMINA_2025
             txtEstado.ReadOnly = soloLectura;
             txtMunicipio.ReadOnly = soloLectura;
             txtColonia.ReadOnly = soloLectura;
+            txtDireccionCompleta.ReadOnly = soloLectura;
             txtCorreoElectronicoPersonal.ReadOnly = soloLectura;
             mskdTelFijo.ReadOnly = soloLectura;
             mskdTelMovil.ReadOnly = soloLectura;
@@ -1161,7 +1446,8 @@ namespace NOMINA_2025
             txtCiudad.ReadOnly = soloLectura;
             txtDepartamento.ReadOnly = soloLectura;
             txtPuesto.ReadOnly = soloLectura;
-            txtRiesgoIMSS.ReadOnly = soloLectura;
+            // El riesgo IMSS proviene de la configuración empresarial. Se muestra, pero no se modifica desde el empleado.
+            txtRiesgoIMSS.ReadOnly = true;
             linklblSAT.Enabled = !soloLectura;
 
             bool hayRegistro = !string.IsNullOrWhiteSpace(txtIDActual.Text);
@@ -1259,11 +1545,7 @@ namespace NOMINA_2025
             var errores = new StringBuilder();
             var camposError = new List<string>();
 
-            bool Cambio(Control c) =>
-                !string.Equals(
-                    _originalValues.ContainsKey(c) ? (_originalValues[c] ?? "") : "",
-                    (c.Text ?? "").Trim(),
-                    StringComparison.Ordinal);
+            bool Cambio(Control c) => !string.Equals(_originalValues.ContainsKey(c) ? (_originalValues[c] ?? "") : "", (c.Text ?? "").Trim(), StringComparison.Ordinal);
 
             string rfc = GetControlValue(mskdRFC).ToUpper();
             string curp = GetControlValue(mskdCURP).ToUpper();
@@ -1592,9 +1874,72 @@ namespace NOMINA_2025
         private void CaptureOriginalValues()
         {
             _originalValues.Clear();
+
+            // Guardar valores originales del mapa principal.
             foreach (var kv in _mapaCampos)
+            {
                 _originalValues[kv.Value] = (kv.Value.Text ?? "").Trim();
+            }
+
+            // Controles adicionales que participan en el guardado y que no están incluidos en _mapaCampos.
+            Control[] adicionales = { txtCiudad, txtDepartamento, txtPuesto };
+
+            foreach (Control control in adicionales)
+            {
+                _originalValues[control] = (control.Text ?? "").Trim();
+            }
+
             _originalValues[txtIDActual] = (txtIDActual.Text ?? "").Trim();
+
+            // Guardar el estado original de la preferencia de correo empresarial.
+            _correoEmpresaPreferidoOriginal = chckbCorreoEmpresa.Checked;
+
+            // Guardar la fecha de ingreso que se muestra antes de iniciar la modificación.
+            _fechaIngresoOriginalEdicion = dtpFechaIngreso.Value.Date;
+        }
+
+        private bool HayCambiosPendientes()
+        {
+            if (_estadoActual != EstadoUI.Edicion)
+                return false;
+
+            // Movimientos laborales preparados y no guardados.
+            if (_modoCapturaBaja || _fechaBajaPendienteConfirmacion)
+                return true;
+
+            // Comparar los controles con la captura original.
+            foreach (var campo in _originalValues)
+            {
+                Control control = campo.Key;
+
+                // No considerar campos informativos o calculados.
+                if (control == txtIDActual || control == txtSalarioDiarioIntegrado || control == txtISRMensual)
+                {
+                    continue;
+                }
+
+                string original = campo.Value ?? "";
+                string actual = (control.Text ?? "").Trim();
+
+                if (!string.Equals(original, actual, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            // Fecha original de ingreso mostrada.
+            if (dtpFechaIngreso.Value.Date != _fechaIngresoOriginalEdicion)
+            {
+                return true;
+            }
+
+            // Preferencia de correo electrónico.
+            if (chckbCorreoEmpresa.Checked != _correoEmpresaPreferidoOriginal)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         // Helper para comparar valor actual vs original
@@ -1605,7 +1950,20 @@ namespace NOMINA_2025
 
         private void AutoGenerarClaves()
         {
-            if (_estadoActual != EstadoUI.Edicion || _autogenerando) return;
+            if (_estadoActual != EstadoUI.Edicion || _autogenerando)
+                return;
+
+            // La autogeneración solamente aplica a altas nuevas.
+            // Nunca modificar automáticamente el RFC o CURP
+            // de un empleado que ya existe en RUEP V9.
+            if (!int.TryParse(txtIDActual.Text, out int idActual))
+                return;
+
+            if (_empleados != null && _empleados.Any(emp => emp.Id == idActual))
+            {
+                return;
+            }
+
             _autogenerando = true;
 
             string prefijo = GenerarRFCBasico(txtNombre.Text, txtApellidoPaterno.Text, txtApellidoMaterno.Text);
@@ -1712,6 +2070,8 @@ namespace NOMINA_2025
 
             _modoCapturaBaja = false;
 
+            _fechaBajaPendienteConfirmacion = false;
+
             // Nuevo empleado: solo mostrar Fecha de Alta en la posición baja.
             MostrarCampoFechaBaja(false, false);
             ActualizarAntiguedadEmpleado();
@@ -1728,8 +2088,8 @@ namespace NOMINA_2025
             txtEstado.Text = "";
             txtMunicipio.Text = "";
             txtColonia.Text = "";
-            txtReferencias.Text = "";
             txtDireccionCompleta.Text = "";
+            txtReferencias.Text = "";
 
             mskdtxtNoExterior.Text = "";
             mskdtxtNoInterior.Text = "";
@@ -1774,14 +2134,18 @@ namespace NOMINA_2025
 
         private bool IntentoBorrarDatosGenerales()
         {
-            int vacios = 0;
-            if (string.IsNullOrWhiteSpace(txtNombre.Text)) vacios++;
-            if (string.IsNullOrWhiteSpace(txtApellidoPaterno.Text)) vacios++;
-            if (string.IsNullOrWhiteSpace(txtApellidoMaterno.Text)) vacios++;
-            if (string.IsNullOrWhiteSpace(mskdRFC.Text)) vacios++;
-            if (string.IsNullOrWhiteSpace(mskdCURP.Text)) vacios++;
-            if (string.IsNullOrWhiteSpace(mskdNSS.Text)) vacios++;
-            return vacios >= 2;
+            bool FueBorrado(Control control)
+            {
+                if (!_originalValues.TryGetValue(control, out string valorAnterior))
+                {
+                    return false;
+                }
+
+                return !string.IsNullOrWhiteSpace(valorAnterior) && string.IsNullOrWhiteSpace(GetControlValue(control));
+            }
+
+            // Evitar que se eliminen identificadores que ya existían en el expediente.
+            return FueBorrado(mskdRFC) || FueBorrado(mskdCURP) || FueBorrado(mskdNSS);
         }
 
         private bool DatosGeneralesInvalidos() => string.IsNullOrWhiteSpace(txtNombre.Text) || string.IsNullOrWhiteSpace(txtApellidoPaterno.Text) ||
@@ -1797,21 +2161,12 @@ namespace NOMINA_2025
 
             if (visible)
             {
-                labelFechaIngreso.Location = new Point(1036, 50);
-                dtpFechaIngreso.Location = new Point(1170, 47);
-
-                lblFechaBaja.Location = new Point(1056, 78);
-                dtpFechaBaja.Location = new Point(1170, 76);
-
                 lblFechaBaja.Visible = true;
                 dtpFechaBaja.Visible = true;
                 dtpFechaBaja.Enabled = editable;
             }
             else
             {
-                labelFechaIngreso.Location = new Point(1036, 78);
-                dtpFechaIngreso.Location = new Point(1170, 76);
-
                 lblFechaBaja.Visible = false;
                 dtpFechaBaja.Visible = false;
                 dtpFechaBaja.Enabled = false;
@@ -1895,9 +2250,6 @@ namespace NOMINA_2025
                 OnLeave(mskdRFC, ValidarRFCAlSalir);
                 OnKeyPress(mskdCURP, SoloAlfaNum_KeyPress);
                 OnLeave(mskdCURP, ValidarCURPAlSalir);
-
-                OnKeyPress(mskdtxtNoExterior, SoloNumeros_KeyPress);
-                OnKeyPress(mskdtxtNoInterior, SoloNumeros_KeyPress);
 
                 if (txtTelEmpr != null)
                 {
@@ -2332,25 +2684,40 @@ namespace NOMINA_2025
             emp.FechaUltimaMod = DateTime.Now.ToString("dd/MM/yyyy");
             emp.ModificadoPor = Environment.UserName;
 
-            _personalService.GuardarCambios();
+            try
+            {
+                _personalService.GuardarCambios();
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    // Recuperar el expediente desde el archivo y mostrar el estado realmente almacenado.
+                    _personalService = new RuepService(RutaRUEP);
+                    _empleados = _personalService.ObtenerTodos();
+                    _empleadosFiltrados = new List<EmpleadoCompleto>(_empleados);
+
+                    RefrescarExpedienteVisible(emp.Id);
+                }
+                catch (Exception exRecarga)
+                {
+                    MessageBox.Show("Ocurrió un error durante el reingreso y no fue posible recuperar el expediente.\n\nError original:\n" + ex.Message + "\n\nError de recuperación:\n" + exRecarga.Message,
+                        "Error de reingreso", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    Close();
+                    return;
+                }
+
+                MessageBox.Show("No fue posible completar normalmente el reingreso.\n\n" + ex.Message + "\n\nSe ha vuelto a leer RUEP.dat para mostrar el estado que realmente quedó almacenado. " +
+                    "Verifica el historial antes de intentar nuevamente.", "Reingreso no confirmado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                return;
+            }
 
             HuboCambios = true;
 
-            _modoCapturaBaja = false;
-            _fechaBajaPendienteConfirmacion = false;
-
-            AplicarFiltros();
-            SeleccionarEmpleadoEnGrid(emp.Id);
-
-            MostrarCampoFechaBaja(false, false);
-
-            btnReingresoEmpleado.Visible = false;
-            btnReingresoEmpleado.Enabled = false;
-
-            btnDarDeBajaEmpleado.Visible = false;
-            btnDarDeBajaEmpleado.Enabled = false;
-
-            CambiarEstadoUI(EstadoUI.Lectura);
+            // Reconstruir el listado y mantener visible al empleado, aunque cambie de estado laboral.
+            RefrescarExpedienteVisible(emp.Id);
 
             MessageBox.Show(respetaAntiguedad ? "El empleado fue reingresado respetando su antigüedad original." : "El empleado fue reingresado tomando como base la nueva fecha de reingreso.",
                 "Reingreso registrado", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -2404,9 +2771,19 @@ namespace NOMINA_2025
             return frm.ShowDialog(this) == DialogResult.OK ? dtp.Value.Date : null;
         }
 
-        private void txtEstado_TextChanged(object sender, EventArgs e)
+        private void FormEDICIONCENTRALPERSONAL_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (e.CloseReason == CloseReason.WindowsShutDown)
+                return;
 
+            if (!HayCambiosPendientes())
+                return;
+
+            DialogResult respuesta = MessageBox.Show("Existen cambios sin guardar.\n\nSi cierras esta ventana, se descartarán las modificaciones pendientes.\n\n¿Deseas cerrar sin guardar?",
+                "Cambios pendientes", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+
+            if (respuesta != DialogResult.Yes)
+                e.Cancel = true;
         }
     }
 }
